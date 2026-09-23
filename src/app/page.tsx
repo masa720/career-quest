@@ -101,7 +101,7 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
                   completed={completed}
                 />
                 <Link
-                  href={`/tasks?task=${task.id}`}
+                  href={`/tasks/${task.id}`}
                   className="home-task-link"
                 >
                   <span className="home-task-copy">
@@ -166,7 +166,7 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
                   completed={completed}
                 />
                 <Link
-                  href={`/tasks?task=${task.id}`}
+                  href={`/tasks/${task.id}`}
                   className="home-task-link"
                 >
                   <span className="home-task-copy">

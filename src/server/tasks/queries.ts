@@ -27,6 +27,19 @@ export async function getTasks(): Promise<Task[]> {
   return data ?? [];
 }
 
+export async function getTask(id: string): Promise<Task | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(activeTaskColumns)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  throwDatabaseError("タスクを取得できませんでした。", error);
+  return data;
+}
+
 export async function rolloverDailyTasks(): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("rollover_daily_tasks");

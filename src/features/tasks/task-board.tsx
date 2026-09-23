@@ -115,6 +115,7 @@ function TaskCardContent({ task }: { task: Task }) {
 function SortableTaskCard({
   task,
   dragDisabled,
+  onDetails,
   onOpen,
   onReview,
   onDelete,
@@ -123,6 +124,7 @@ function SortableTaskCard({
 }: {
   task: Task;
   dragDisabled: boolean;
+  onDetails: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
@@ -149,8 +151,8 @@ function SortableTaskCard({
       <button
         type="button"
         className="card-main"
-        onClick={() => onOpen(task)}
-        aria-label={`${task.title}を編集`}
+        onClick={() => onDetails(task)}
+        aria-label={`${task.title}の詳細を見る`}
       >
         <TaskCardContent task={task} />
       </button>
@@ -194,6 +196,7 @@ function KanbanColumn({
   status,
   tasks,
   dragDisabled,
+  onDetails,
   onOpen,
   onReview,
   onDelete,
@@ -203,6 +206,7 @@ function KanbanColumn({
   status: TaskStatus;
   tasks: Task[];
   dragDisabled: boolean;
+  onDetails: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
@@ -236,6 +240,7 @@ function KanbanColumn({
               key={task.id}
               task={task}
               dragDisabled={dragDisabled}
+              onDetails={onDetails}
               onOpen={onOpen}
               onReview={onReview}
               onDelete={onDelete}
@@ -732,6 +737,7 @@ export function TaskBoard({
               status={status}
               tasks={tasksFor(status)}
               dragDisabled={filtered}
+              onDetails={(task) => router.push(`/tasks/${task.id}`)}
               onOpen={setSelectedTask}
               onReview={handleReview}
               onDelete={handleCardDelete}
