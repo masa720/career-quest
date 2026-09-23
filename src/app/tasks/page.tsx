@@ -27,7 +27,7 @@ export default async function TasksPage({
     return (
       <div className="tasks-page">
         <div className="page-title-block">
-          <h1>タスク一覧</h1>
+          <h1>📋 タスク一覧</h1>
         </div>
         <section className="setup-state">
           <strong>タスクを読み込めませんでした</strong>
@@ -41,7 +41,7 @@ export default async function TasksPage({
     <div className="tasks-page">
       <div className="board-title-row">
         <div>
-          <h1>タスク一覧</h1>
+          <h1>📋 タスク一覧</h1>
         </div>
       </div>
       <TaskBoard

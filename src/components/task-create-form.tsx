@@ -21,7 +21,7 @@ function SubmitButton() {
       className="button button-primary form-submit"
       disabled={pending}
     >
-      {pending ? "保存中…" : "タスクを追加"}
+      {pending ? "保存中…" : "タスクを追加 🚀"}
     </button>
   );
 }

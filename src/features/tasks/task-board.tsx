@@ -56,6 +56,12 @@ import {
 
 type FilterValue<T extends string> = T | "all";
 
+const statusEmoji: Record<TaskStatus, string> = {
+  todo: "📝",
+  doing: "🚀",
+  done: "✅",
+};
+
 const noticeMessages: Record<string, string> = {
   created: "タスクを追加しました",
 };
@@ -226,7 +232,9 @@ function KanbanColumn({
     >
       <div className="column-heading">
         <div>
-          <h2 id={`column-heading-${status}`}>{statusLabels[status]}</h2>
+          <h2 id={`column-heading-${status}`}>
+            {statusEmoji[status]} {statusLabels[status]}
+          </h2>
         </div>
         <span>{tasks.length}</span>
       </div>
@@ -342,7 +350,7 @@ function TaskDialog({
           <div className="dialog-heading">
             <div>
               <span>タスク詳細</span>
-              <h2 id="task-dialog-title">編集する</h2>
+              <h2 id="task-dialog-title">✏️ 編集する</h2>
             </div>
             <button
               type="button"

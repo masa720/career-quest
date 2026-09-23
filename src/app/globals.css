@@ -291,20 +291,45 @@ summary:focus-visible {
 }
 
 .countdown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px;
   margin: 22px 0 0;
-  font-size: 23px;
+  font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 
 .countdown strong {
   display: inline-block;
-  margin: 0 5px 0 2px;
+  margin: 0 2px;
   font-family: inherit;
   font-size: 46px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.055em;
+}
+
+.countdown-prefix {
+  margin-right: 2px;
+  font-size: 16px;
+}
+
+.countdown-day-label {
+  margin-right: 5px;
+}
+
+.countdown-clock {
+  border-radius: 8px;
+  background: var(--brand-subtle);
+  padding: 5px 8px;
+  color: var(--brand);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.045em;
 }
 
 .expired {
@@ -550,6 +575,16 @@ summary:focus-visible {
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.priority-item.is-complete {
+  order: 2;
+  background: #faf8f6;
+}
+
+.priority-item.is-complete .priority-copy > strong {
+  color: var(--ink-soft);
+  text-decoration: line-through;
 }
 
 .priority-text.priority-high,
@@ -860,7 +895,9 @@ summary:focus-visible {
 .field em {
   margin-left: 5px;
   color: var(--red);
-  font-size: 9px;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 0;
   font-style: normal;
 }
 
@@ -1149,9 +1186,29 @@ summary:focus-visible {
 }
 
 .priority-badge {
+  display: inline-flex;
+  min-height: 21px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
   font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.1em;
+}
+
+.priority-badge.priority-high {
+  background: #f8d9df;
+  color: #a5283b;
+}
+
+.priority-badge.priority-medium {
+  background: #ffedc7;
+  color: #8a5a12;
+}
+
+.priority-badge.priority-low {
+  background: #dcefe7;
+  color: #356b5b;
 }
 
 .category-label {

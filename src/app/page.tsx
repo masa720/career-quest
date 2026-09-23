@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
 import { TaskCompleteButton } from "@/components/task-complete-button";
+import { VisaCountdown } from "@/components/visa-countdown";
 import {
   categoryLabels,
   priorityCardLabels,
@@ -47,17 +48,11 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
       </div>
       {visaExpiryDate ? (
         <>
-          <p className="countdown">
-            {daysLeft === 0 ? (
-              "今日まで"
-            ) : daysLeft !== null && daysLeft > 0 ? (
-              <>
-                あと <strong>{daysLeft}</strong> 日
-              </>
-            ) : (
-              <span className="expired">期限を過ぎています</span>
-            )}
-          </p>
+          <VisaCountdown
+            expiryDate={visaExpiryDate}
+            timezone={settings?.timezone ?? "America/Vancouver"}
+            fallbackDays={daysLeft ?? 0}
+          />
           <p className="date-display">
             〜 {formatJapaneseDate(visaExpiryDate)}
           </p>
@@ -98,32 +93,45 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
     <section className="priority-section">
       <div className="section-heading">
         <div>
-          <h2>今日の優先タスク</h2>
+          <h2>🎯 今日の優先タスク</h2>
         </div>
         <span className="task-count">{tasks.length}</span>
       </div>
 
       {tasks.length > 0 ? (
         <div className="priority-list">
-          {tasks.map((task, index) => (
-            <div className="priority-item" key={task.id}>
-              <TaskCompleteButton taskId={task.id} title={task.title} />
-              <Link href={`/tasks?task=${task.id}`} className="priority-item-link">
-                <span className="priority-index">0{index + 1}</span>
-                <span className="priority-copy">
-                  <span>
-                    <b className={`priority-text priority-${task.priority}`}>
-                      {priorityCardLabels[task.priority]}
-                    </b>
-                    <i>·</i>
-                    {categoryLabels[task.category]}
+          {tasks.map((task, index) => {
+            const completed = task.status === "done";
+            return (
+              <div
+                className={`priority-item ${completed ? "is-complete" : ""}`}
+                key={task.id}
+              >
+                <TaskCompleteButton
+                  taskId={task.id}
+                  title={task.title}
+                  completed={completed}
+                />
+                <Link
+                  href={`/tasks?task=${task.id}`}
+                  className="priority-item-link"
+                >
+                  <span className="priority-index">0{index + 1}</span>
+                  <span className="priority-copy">
+                    <span>
+                      <b className={`priority-text priority-${task.priority}`}>
+                        {priorityCardLabels[task.priority]}
+                      </b>
+                      <i>·</i>
+                      {categoryLabels[task.category]}
+                    </span>
+                    <strong>{task.title}</strong>
                   </span>
-                  <strong>{task.title}</strong>
-                </span>
-                <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-            </div>
-          ))}
+                  <ArrowRight size={18} aria-hidden="true" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="empty-priority">
@@ -147,9 +155,7 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
     <section className="daily-section">
       <div className="section-heading daily-heading">
         <div>
-          <h2>
-            <Repeat2 size={19} aria-hidden="true" /> 毎日のタスク
-          </h2>
+          <h2>🔁 毎日のタスク</h2>
         </div>
         {tasks.length > 0 && (
           <span className="daily-progress">
@@ -212,7 +218,7 @@ export default async function HomePage({
     settings = await getSettings();
     await rolloverDailyTasks();
     [tasks, dailyTasks, streak] = await Promise.all([
-      getPriorityTasks(),
+      getPriorityTasks(settings.timezone),
       getDailyTasks(),
       getCurrentStreak(settings.timezone),
     ]);
@@ -232,7 +238,7 @@ export default async function HomePage({
       <div className="dashboard-grid">
         <VisaCard settings={settings} />
         <section className="dashboard-card streak-card">
-          <div className="card-eyebrow">CURRENT STREAK</div>
+          <div className="card-eyebrow">🔥 CURRENT STREAK</div>
           <div className="streak-value">
             <span className="flame-icon">
               <Flame size={25} fill="currentColor" />

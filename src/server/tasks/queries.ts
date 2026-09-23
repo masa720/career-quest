@@ -44,7 +44,9 @@ export async function getDailyTasks(): Promise<Task[]> {
     );
 }
 
-export async function getPriorityTasks(): Promise<Task[]> {
+export async function getPriorityTasks(
+  timezone = "America/Vancouver",
+): Promise<Task[]> {
   const tasks = await getTasks();
   const statusRank: Record<TaskStatus, number> = {
     doing: 0,
@@ -53,8 +55,16 @@ export async function getPriorityTasks(): Promise<Task[]> {
   };
   const priorityRank = { high: 0, medium: 1, low: 2 } as const;
 
-  return tasks
-    .filter((task) => task.status !== "done" && !task.is_daily)
+  const dateFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const today = dateFormatter.format(new Date());
+  const nonDailyTasks = tasks.filter((task) => !task.is_daily);
+  const activeTasks = nonDailyTasks
+    .filter((task) => task.status !== "done")
     .sort(
       (a, b) =>
         statusRank[a.status] - statusRank[b.status] ||
@@ -62,6 +72,20 @@ export async function getPriorityTasks(): Promise<Task[]> {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     )
     .slice(0, 3);
+  const completedToday = nonDailyTasks
+    .filter(
+      (task) =>
+        task.status === "done" &&
+        task.completed_at !== null &&
+        dateFormatter.format(new Date(task.completed_at)) === today,
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.completed_at ?? 0).getTime() -
+        new Date(b.completed_at ?? 0).getTime(),
+    );
+
+  return [...activeTasks, ...completedToday];
 }
 
 export async function getCurrentStreak(timezone: string): Promise<number> {
