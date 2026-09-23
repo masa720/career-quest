@@ -1,5 +1,6 @@
 "use client";
 
+import { Repeat2 } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -92,6 +93,15 @@ export function TaskCreateForm() {
           placeholder="あとで残したい気づきなど（空でもOK）"
         />
         <FieldError errors={state.fieldErrors?.memo} />
+      </label>
+
+      <label className="checkbox-field">
+        <input type="checkbox" name="is_daily" />
+        <span className="checkbox-control" aria-hidden="true" />
+        <span className="checkbox-copy">
+          <strong><Repeat2 size={16} /> 毎日繰り返す</strong>
+          <small>完了しても、翌日に「未着手」へ戻ります</small>
+        </span>
       </label>
 
       <p className="form-hint">新しいタスクは「未着手」に追加されます。</p>

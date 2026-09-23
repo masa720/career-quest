@@ -25,6 +25,7 @@ export type Database = {
           memo: string | null;
           status: TaskStatus;
           position: number;
+          is_daily: boolean;
           review_of_task_id: string | null;
           created_at: string;
           updated_at: string;
@@ -40,6 +41,7 @@ export type Database = {
           memo?: string | null;
           status?: TaskStatus;
           position?: number;
+          is_daily?: boolean;
           review_of_task_id?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -54,6 +56,7 @@ export type Database = {
           memo?: string | null;
           status?: TaskStatus;
           position?: number;
+          is_daily?: boolean;
           review_of_task_id?: string | null;
           updated_at?: string;
           completed_at?: string | null;
@@ -109,6 +112,10 @@ export type Database = {
           p_column_orders: Json;
         };
         Returns: Database["public"]["Tables"]["tasks"]["Row"][];
+      };
+      rollover_daily_tasks: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
     };
     Enums: Record<string, never>;

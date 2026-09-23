@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Flame, Pencil, Plus } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Circle, Flame, Pencil, Repeat2 } from "lucide-react";
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
@@ -9,7 +9,12 @@ import {
 } from "@/features/tasks/types";
 import { daysUntilDate, formatJapaneseDate } from "@/lib/date";
 import { getSettings, type AppSettings } from "@/server/settings/queries";
-import { getCurrentStreak, getPriorityTasks } from "@/server/tasks/queries";
+import {
+  getCurrentStreak,
+  getDailyTasks,
+  getPriorityTasks,
+  rolloverDailyTasks,
+} from "@/server/tasks/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -90,16 +95,7 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
           <span>TODAY&apos;S FOCUS</span>
           <h2>今日の優先タスク</h2>
         </div>
-        <div className="section-heading-actions">
-          <span className="task-count">{tasks.length}</span>
-          <Link
-            href="/tasks/new"
-            className="button button-primary priority-add-button"
-          >
-            <Plus size={17} aria-hidden="true" />
-            タスクを追加
-          </Link>
-        </div>
+        <span className="task-count">{tasks.length}</span>
       </div>
 
       {tasks.length > 0 ? (
@@ -140,6 +136,54 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
   );
 }
 
+function DailyTaskList({ tasks }: { tasks: Task[] }) {
+  const completedCount = tasks.filter((task) => task.status === "done").length;
+
+  return (
+    <section className="daily-section">
+      <div className="section-heading daily-heading">
+        <div>
+          <span>DAILY ROUTINE</span>
+          <h2><Repeat2 size={19} aria-hidden="true" /> 毎日のタスク</h2>
+        </div>
+        {tasks.length > 0 && (
+          <span className="daily-progress">{completedCount} / {tasks.length}</span>
+        )}
+      </div>
+
+      {tasks.length > 0 ? (
+        <div className="daily-list">
+          {tasks.map((task) => {
+            const completed = task.status === "done";
+            return (
+              <Link
+                key={task.id}
+                href={`/tasks?task=${task.id}`}
+                className={`daily-item ${completed ? "is-complete" : ""}`}
+              >
+                <span className="daily-check" aria-hidden="true">
+                  {completed ? <Check size={16} /> : <Circle size={16} />}
+                </span>
+                <span>
+                  <strong>{task.title}</strong>
+                  <small>{categoryLabels[task.category]}</small>
+                </span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <Link href="/tasks/new" className="daily-empty">
+          <Repeat2 size={18} aria-hidden="true" />
+          <span><strong>毎日のタスクを作る</strong><small>作成画面で「毎日繰り返す」を選択</small></span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      )}
+    </section>
+  );
+}
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -148,13 +192,16 @@ export default async function HomePage({
   const { notice } = await searchParams;
   let settings: AppSettings | null = null;
   let tasks: Task[] = [];
+  let dailyTasks: Task[] = [];
   let streak = 0;
   let loadError: string | null = null;
 
   try {
     settings = await getSettings();
-    [tasks, streak] = await Promise.all([
+    await rolloverDailyTasks();
+    [tasks, dailyTasks, streak] = await Promise.all([
       getPriorityTasks(),
+      getDailyTasks(),
       getCurrentStreak(settings.timezone),
     ]);
   } catch (error) {
@@ -201,6 +248,7 @@ export default async function HomePage({
         </section>
       )}
 
+      <DailyTaskList tasks={dailyTasks} />
       <PriorityList tasks={tasks} />
     </div>
   );

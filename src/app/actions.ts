@@ -42,6 +42,7 @@ export async function createTaskAction(
     priority: formText(formData, "priority"),
     description: formText(formData, "description"),
     memo: formText(formData, "memo"),
+    is_daily: formData.get("is_daily") === "on",
   });
 
   if (!parsed.success) {

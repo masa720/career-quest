@@ -85,6 +85,7 @@ export async function updateTask(
       priority: input.priority,
       description: cleanOptionalText(input.description),
       memo: cleanOptionalText(input.memo),
+      is_daily: input.is_daily,
     })
     .eq("id", input.id)
     .is("deleted_at", null)
@@ -155,12 +156,18 @@ export async function createReviewTask(id: string): Promise<Task> {
 
   if (positionError) throw new Error("タスクの並び順を取得できませんでした。");
 
+  const reviewPrefix = "【復習】";
+  const baseTitle = original.title.replace(/^【復習】\s*/, "");
+  const reviewTitle = `${reviewPrefix}${baseTitle.slice(0, 200 - reviewPrefix.length)}`;
+
   const { data, error } = await supabase
     .from("tasks")
     .insert({
       ...original,
+      title: reviewTitle,
       memo: null,
       status: "todo",
+      is_daily: false,
       completed_at: null,
       review_of_task_id: id,
       position: (lastTask?.position ?? -1) + 1,

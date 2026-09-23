@@ -1,5 +1,5 @@
 /* global self, caches, fetch */
-const CACHE_NAME = "careerquest-shell-v1";
+const CACHE_NAME = "careerquest-shell-v2";
 const SHELL_ASSETS = [
   "/offline.html",
   "/icon-192.png",

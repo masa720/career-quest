@@ -1,8 +1,5 @@
-import { Plus } from "lucide-react";
-import Link from "next/link";
-
 import { TaskBoard } from "@/features/tasks/task-board";
-import { getTasks } from "@/server/tasks/queries";
+import { getTasks, rolloverDailyTasks } from "@/server/tasks/queries";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "タスク一覧" };
@@ -17,6 +14,7 @@ export default async function TasksPage({
   let loadError: string | null = null;
 
   try {
+    await rolloverDailyTasks();
     tasks = await getTasks();
   } catch (error) {
     loadError =
@@ -47,9 +45,6 @@ export default async function TasksPage({
           <p className="page-kicker">QUEST BOARD</p>
           <h1>タスク一覧</h1>
         </div>
-        <Link href="/tasks/new" className="button button-primary">
-          <Plus size={18} /> タスクを追加
-        </Link>
       </div>
       <TaskBoard
         initialTasks={tasks}

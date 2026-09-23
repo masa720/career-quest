@@ -24,6 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   Check,
   GripVertical,
+  Repeat2,
   RotateCcw,
   Search,
   Trash2,
@@ -99,7 +100,10 @@ function TaskCardContent({ task }: { task: Task }) {
         <span className={`priority-badge priority-${task.priority}`}>
           {priorityCardLabels[task.priority]}
         </span>
-        <span className="category-label">{categoryLabels[task.category]}</span>
+        <span className="task-card-tags">
+          {task.is_daily && <span className="daily-badge"><Repeat2 size={11} />毎日</span>}
+          <span className="category-label">{categoryLabels[task.category]}</span>
+        </span>
       </div>
       <h3>{task.title}</h3>
       {task.description && <p>{task.description}</p>}
@@ -260,6 +264,7 @@ function TaskDialog({
         description: draft.description ?? "",
         memo: draft.memo ?? "",
         status: draft.status,
+        is_daily: draft.is_daily,
       });
       if (!result.ok || !result.task) {
         setError(result.ok ? "更新に失敗しました。" : result.error);
@@ -380,6 +385,19 @@ function TaskDialog({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="checkbox-field">
+          <input
+            type="checkbox"
+            checked={draft.is_daily}
+            onChange={(event) => setDraft({ ...draft, is_daily: event.target.checked })}
+          />
+          <span className="checkbox-control" aria-hidden="true" />
+          <span className="checkbox-copy">
+            <strong><Repeat2 size={16} /> 毎日繰り返す</strong>
+            <small>完了後、翌日に「未着手」へ戻ります</small>
+          </span>
         </label>
 
         <div className="dialog-actions">

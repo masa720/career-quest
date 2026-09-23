@@ -22,6 +22,7 @@ export const createTaskSchema = z.object({
   priority: z.enum(TASK_PRIORITIES, "優先度を選択してください"),
   description: optionalText,
   memo: optionalText,
+  is_daily: z.boolean(),
 });
 
 export const updateTaskSchema = createTaskSchema.extend({

@@ -22,6 +22,7 @@ export type Task = {
   memo: string | null;
   status: TaskStatus;
   position: number;
+  is_daily: boolean;
   review_of_task_id: string | null;
   created_at: string;
   updated_at: string;
@@ -31,7 +32,7 @@ export type Task = {
 
 export type TaskDraft = Pick<
   Task,
-  "category" | "title" | "priority" | "description" | "memo"
+  "category" | "title" | "priority" | "description" | "memo" | "is_daily"
 >;
 
 export const categoryLabels: Record<TaskCategory, string> = {

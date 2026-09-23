@@ -49,6 +49,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="page-shell">{children}</main>
 
+      <Link
+        href="/tasks/new"
+        className="floating-add-button"
+        aria-label="タスクを追加"
+        title="タスクを追加"
+      >
+        <Plus size={27} strokeWidth={2.4} aria-hidden="true" />
+      </Link>
+
       <nav className="mobile-nav" aria-label="メインナビゲーション">
         {navItems.map(({ href, label, icon: Icon }) => (
           <Link
