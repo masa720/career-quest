@@ -29,9 +29,8 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const isOwner = data?.claims.sub === getOwnerUserId();
   const isLoginPage = request.nextUrl.pathname === "/login";
-  const isAuthCallback = request.nextUrl.pathname === "/auth/callback";
 
-  if (!isOwner && !isLoginPage && !isAuthCallback) {
+  if (!isOwner && !isLoginPage) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.search = data?.claims.sub ? "?error=unauthorized" : "";

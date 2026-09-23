@@ -1,44 +1,46 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getOwnerUserId } from "@/lib/supabase/auth-config";
 import { createAuthServerClient } from "@/lib/supabase/auth-server";
 
 export type LoginState = { error?: string; message?: string };
 
 const loginSchema = z.object({
   email: z.string().trim().email("メールアドレスを確認してください。"),
+  password: z.string().min(1, "パスワードを入力してください。"),
 });
 
-export async function requestMagicLink(
+export async function loginWithPassword(
   _previousState: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
-  const parsed = loginSchema.safeParse({ email: formData.get("email") });
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
-  const requestHeaders = await headers();
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    requestHeaders.get("origin") ??
-    "http://localhost:3000";
   const supabase = await createAuthServerClient();
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-      shouldCreateUser: false,
-    },
+    password: parsed.data.password,
   });
 
   if (error) {
-    console.error("requestMagicLink", error.message);
-    return { error: "ログインリンクを送信できませんでした。登録済みのメールか確認してください。" };
+    console.error("loginWithPassword", error.message);
+    return { error: "ログインIDまたはパスワードが違います。" };
   }
 
-  return { message: "ログインリンクを送信しました。メールを確認してください。" };
+  const { data } = await supabase.auth.getClaims();
+  if (data?.claims.sub !== getOwnerUserId()) {
+    await supabase.auth.signOut();
+    return { error: "このアカウントにはアクセス権がありません。" };
+  }
+
+  redirect("/");
 }
 
 export async function signOut() {

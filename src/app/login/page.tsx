@@ -17,7 +17,7 @@ export default async function LoginPage({
         <p className="page-kicker">PRIVATE ACCESS</p>
         <h1>CareerQuest</h1>
         <p className="login-copy">
-          登録済みの所有者メールへ、1回限りのログインリンクを送ります。
+          所有者のログインIDとパスワードを入力してください。
         </p>
         {error === "unauthorized" && (
           <p className="login-error">このアカウントにはアクセス権がありません。</p>
