@@ -3,7 +3,7 @@ import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function updateSettings(visaExpiryDate: string | null) {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("app_settings")
     .update({ visa_expiry_date: visaExpiryDate })

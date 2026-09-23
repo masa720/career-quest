@@ -1,8 +1,10 @@
 "use client";
 
-import { Home, ListTodo, Plus } from "lucide-react";
+import { Home, ListTodo, LogOut, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { signOut } from "@/app/login/actions";
 
 const navItems = [
   { href: "/", label: "TOP", icon: Home },
@@ -18,6 +20,10 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  if (pathname === "/login") {
+    return <main className="auth-shell">{children}</main>;
+  }
 
   return (
     <div className="min-h-dvh">
@@ -43,6 +49,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {label === "追加" ? "タスク登録" : label}
               </Link>
             ))}
+            <form action={signOut}>
+              <button type="submit" aria-label="ログアウト">
+                <LogOut size={17} aria-hidden="true" />
+                ログアウト
+              </button>
+            </form>
           </nav>
         </div>
       </header>

@@ -14,7 +14,7 @@ function throwDatabaseError(message: string, cause: { message: string } | null) 
 }
 
 export async function getTasks(): Promise<Task[]> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("tasks")
     .select(activeTaskColumns)
@@ -28,7 +28,7 @@ export async function getTasks(): Promise<Task[]> {
 }
 
 export async function rolloverDailyTasks(): Promise<void> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("rollover_daily_tasks");
   throwDatabaseError("繰り返しタスクを更新できませんでした。", error);
 }
@@ -89,7 +89,7 @@ export async function getPriorityTasks(
 }
 
 export async function getCurrentStreak(timezone: string): Promise<number> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("get_current_streak", {
     p_timezone: timezone,
   });

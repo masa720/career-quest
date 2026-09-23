@@ -10,7 +10,7 @@ export type AppSettings = {
 };
 
 export async function getSettings(): Promise<AppSettings> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("app_settings")
     .select("id, visa_expiry_date, timezone, updated_at")

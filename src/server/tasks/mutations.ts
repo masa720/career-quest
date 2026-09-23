@@ -11,7 +11,7 @@ function cleanOptionalText(value: string | null) {
 }
 
 export async function createTask(input: TaskDraft): Promise<Task> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: lastTask, error: positionError } = await supabase
     .from("tasks")
     .select("position")
@@ -49,7 +49,7 @@ export async function moveTask(
   targetStatus: TaskStatus,
   columnOrders: ColumnOrders,
 ): Promise<Task> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("move_task", {
     p_task_id: taskId,
     p_target_status: targetStatus,
@@ -65,7 +65,7 @@ export async function moveTask(
 }
 
 export async function completeTask(taskId: string): Promise<Task> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: allTasks, error } = await supabase
     .from("tasks")
     .select("id, status")
@@ -89,7 +89,7 @@ export async function completeTask(taskId: string): Promise<Task> {
 export async function updateTask(
   input: TaskDraft & { id: string; status: TaskStatus },
 ): Promise<Task> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: current, error: currentError } = await supabase
     .from("tasks")
     .select("status")
@@ -140,7 +140,7 @@ export async function updateTask(
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { error } = await supabase
     .from("tasks")
     .update({ deleted_at: new Date().toISOString() })
@@ -154,7 +154,7 @@ export async function deleteTask(id: string): Promise<void> {
 }
 
 export async function createReviewTask(id: string): Promise<Task> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: original, error: originalError } = await supabase
     .from("tasks")
     .select("category, title, priority, description")

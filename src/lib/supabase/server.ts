@@ -3,8 +3,10 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
+import { requireOwner } from "./auth-server";
 
-export function createServerSupabaseClient() {
+export async function createServerSupabaseClient() {
+  await requireOwner();
   const url = process.env.SUPABASE_URL;
   const secretKey = process.env.SUPABASE_SECRET_KEY;
 
