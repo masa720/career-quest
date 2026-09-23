@@ -23,7 +23,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import {
   Check,
-  GripVertical,
   Pencil,
   Repeat2,
   RotateCcw,
@@ -142,8 +141,10 @@ function SortableTaskCard({
   return (
     <article
       ref={setNodeRef}
-      className={`task-card ${isDragging ? "is-dragging" : ""}`}
+      className={`task-card ${isDragging ? "is-dragging" : ""} ${dragDisabled ? "is-drag-disabled" : ""}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
     >
       <button
         type="button"
@@ -183,20 +184,6 @@ function SortableTaskCard({
           title="削除"
         >
           <Trash2 size={15} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="drag-handle"
-          aria-label={`${task.title}を移動`}
-          title={
-            dragDisabled
-              ? "フィルター解除後に並び替えできます"
-              : "ドラッグして移動"
-          }
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical size={18} aria-hidden="true" />
         </button>
       </div>
     </article>

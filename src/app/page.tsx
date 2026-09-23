@@ -1,10 +1,4 @@
-import {
-  ArrowRight,
-  CalendarDays,
-  Flame,
-  Pencil,
-  Repeat2,
-} from "lucide-react";
+import { ArrowRight, CalendarDays, Flame, Pencil, Repeat2 } from "lucide-react";
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
@@ -40,12 +34,6 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
 
   return (
     <section className="dashboard-card visa-card">
-      <div className="card-eyebrow">
-        <span className="flag" aria-hidden="true">
-          🇨🇦
-        </span>
-        VISA
-      </div>
       {visaExpiryDate ? (
         <>
           <VisaCountdown
@@ -54,7 +42,7 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
             fallbackDays={daysLeft ?? 0}
           />
           <p className="date-display">
-            〜 {formatJapaneseDate(visaExpiryDate)}
+            期限日 <strong>{formatJapaneseDate(visaExpiryDate)}</strong>
           </p>
         </>
       ) : (
@@ -90,7 +78,7 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
 
 function PriorityList({ tasks }: { tasks: Task[] }) {
   return (
-    <section className="priority-section">
+    <div className="home-task-group priority-group">
       <div className="section-heading">
         <div>
           <h2>🎯 今日の優先タスク</h2>
@@ -100,11 +88,11 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
 
       {tasks.length > 0 ? (
         <div className="priority-list">
-          {tasks.map((task, index) => {
+          {tasks.map((task) => {
             const completed = task.status === "done";
             return (
               <div
-                className={`priority-item ${completed ? "is-complete" : ""}`}
+                className={`home-task-card priority-item ${completed ? "is-complete" : ""}`}
                 key={task.id}
               >
                 <TaskCompleteButton
@@ -114,20 +102,19 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
                 />
                 <Link
                   href={`/tasks?task=${task.id}`}
-                  className="priority-item-link"
+                  className="home-task-link"
                 >
-                  <span className="priority-index">0{index + 1}</span>
-                  <span className="priority-copy">
-                    <span>
+                  <span className="home-task-copy">
+                    <strong>{task.title}</strong>
+                    <small>
                       <b className={`priority-text priority-${task.priority}`}>
                         {priorityCardLabels[task.priority]}
                       </b>
                       <i>·</i>
                       {categoryLabels[task.category]}
-                    </span>
-                    <strong>{task.title}</strong>
+                    </small>
                   </span>
-                  <ArrowRight size={18} aria-hidden="true" />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Link>
               </div>
             );
@@ -144,7 +131,7 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
       <Link href="/tasks" className="text-link">
         タスクをすべて見る <ArrowRight size={16} aria-hidden="true" />
       </Link>
-    </section>
+    </div>
   );
 }
 
@@ -152,7 +139,7 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
   const completedCount = tasks.filter((task) => task.status === "done").length;
 
   return (
-    <section className="daily-section">
+    <div className="home-task-group daily-group">
       <div className="section-heading daily-heading">
         <div>
           <h2>🔁 毎日のタスク</h2>
@@ -171,15 +158,18 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
             return (
               <div
                 key={task.id}
-                className={`daily-item ${completed ? "is-complete" : ""}`}
+                className={`home-task-card daily-item ${completed ? "is-complete" : ""}`}
               >
                 <TaskCompleteButton
                   taskId={task.id}
                   title={task.title}
                   completed={completed}
                 />
-                <Link href={`/tasks?task=${task.id}`} className="daily-item-link">
-                  <span>
+                <Link
+                  href={`/tasks?task=${task.id}`}
+                  className="home-task-link"
+                >
+                  <span className="home-task-copy">
                     <strong>{task.title}</strong>
                     <small>{categoryLabels[task.category]}</small>
                   </span>
@@ -198,6 +188,21 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
           </span>
         </div>
       )}
+    </div>
+  );
+}
+
+function TaskOverview({
+  dailyTasks,
+  priorityTasks,
+}: {
+  dailyTasks: Task[];
+  priorityTasks: Task[];
+}) {
+  return (
+    <section className="tasks-overview">
+      <DailyTaskList tasks={dailyTasks} />
+      <PriorityList tasks={priorityTasks} />
     </section>
   );
 }
@@ -266,8 +271,7 @@ export default async function HomePage({
         </section>
       )}
 
-      <DailyTaskList tasks={dailyTasks} />
-      <PriorityList tasks={tasks} />
+      <TaskOverview dailyTasks={dailyTasks} priorityTasks={tasks} />
     </div>
   );
 }
