@@ -27,7 +27,6 @@ export default async function TasksPage({
     return (
       <div className="tasks-page">
         <div className="page-title-block">
-          <p className="page-kicker">QUEST BOARD</p>
           <h1>タスク一覧</h1>
         </div>
         <section className="setup-state">
@@ -42,7 +41,6 @@ export default async function TasksPage({
     <div className="tasks-page">
       <div className="board-title-row">
         <div>
-          <p className="page-kicker">QUEST BOARD</p>
           <h1>タスク一覧</h1>
         </div>
       </div>

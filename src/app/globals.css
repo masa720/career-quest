@@ -165,7 +165,7 @@ summary:focus-visible {
   width: 58px;
   height: 58px;
   place-items: center;
-  border: 3px solid var(--paper);
+  border: 0;
   border-radius: 50%;
   background: var(--brand);
   box-shadow: 0 10px 26px rgba(210, 38, 48, 0.28);
@@ -300,10 +300,11 @@ summary:focus-visible {
 .countdown strong {
   display: inline-block;
   margin: 0 5px 0 2px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 54px;
-  font-weight: 500;
-  line-height: 0.9;
+  font-family: inherit;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.055em;
 }
 
 .expired {
@@ -430,10 +431,11 @@ summary:focus-visible {
 }
 
 .streak-value strong {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 58px;
-  font-weight: 500;
-  line-height: 0.9;
+  font-family: inherit;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.055em;
 }
 
 .streak-value > span:last-child {
@@ -642,8 +644,7 @@ summary:focus-visible {
   padding: 10px 13px;
 }
 
-.daily-item:hover,
-.daily-empty:hover {
+.daily-item:hover {
   border-color: #df9ca3;
   background: var(--brand-subtle);
 }
@@ -684,7 +685,7 @@ summary:focus-visible {
 }
 
 .daily-empty {
-  grid-template-columns: 28px minmax(0, 1fr) 18px;
+  grid-template-columns: 28px minmax(0, 1fr);
   gap: 10px;
   min-height: 68px;
   margin-top: 16px;
@@ -879,21 +880,17 @@ summary:focus-visible {
 
 .checkbox-field {
   position: relative;
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  display: inline-flex;
   align-items: center;
-  gap: 11px;
-  min-height: 66px;
-  border: 1px solid #d7ded8;
-  border-radius: 12px;
-  background: white;
-  padding: 10px 13px;
+  justify-self: start;
+  gap: 8px;
+  min-height: 28px;
+  padding: 2px 0;
   cursor: pointer;
 }
 
 .checkbox-field:hover {
-  border-color: #df9ca3;
-  background: var(--brand-subtle);
+  color: var(--brand);
 }
 
 .checkbox-field > input {
@@ -905,11 +902,11 @@ summary:focus-visible {
 
 .checkbox-control {
   display: grid;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   place-items: center;
-  border: 2px solid #c7babb;
-  border-radius: 7px;
+  border: 1.5px solid #b9aaac;
+  border-radius: 5px;
   background: white;
 }
 
@@ -919,8 +916,8 @@ summary:focus-visible {
 }
 
 .checkbox-field > input:checked + .checkbox-control::after {
-  width: 5px;
-  height: 9px;
+  width: 4px;
+  height: 7px;
   border: solid white;
   border-width: 0 2px 2px 0;
   content: "";
@@ -933,7 +930,9 @@ summary:focus-visible {
 }
 
 .checkbox-copy {
-  display: grid;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .checkbox-copy strong {
@@ -1173,6 +1172,8 @@ summary:focus-visible {
 }
 
 .review-button,
+.card-edit-button,
+.card-delete-button,
 .drag-handle,
 .icon-button {
   display: inline-flex;
@@ -1193,6 +1194,29 @@ summary:focus-visible {
 
 .review-button:disabled {
   opacity: 0.5;
+}
+
+.card-edit-button,
+.card-delete-button {
+  width: 34px;
+  height: 30px;
+  border-radius: 8px;
+  color: #a99597;
+}
+
+.card-edit-button:hover {
+  background: var(--brand-subtle);
+  color: var(--brand);
+}
+
+.card-delete-button:hover:not(:disabled) {
+  background: #fff0f1;
+  color: var(--red);
+}
+
+.card-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.45;
 }
 
 .drag-handle {
@@ -1426,7 +1450,7 @@ summary:focus-visible {
 
   .countdown strong,
   .streak-value strong {
-    font-size: 49px;
+    font-size: 43px;
   }
 
   .priority-section {

@@ -24,6 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   Check,
   GripVertical,
+  Pencil,
   Repeat2,
   RotateCcw,
   Search,
@@ -116,13 +117,17 @@ function SortableTaskCard({
   dragDisabled,
   onOpen,
   onReview,
+  onDelete,
   reviewPending,
+  deletePending,
 }: {
   task: Task;
   dragDisabled: boolean;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
+  onDelete: (task: Task) => void;
   reviewPending: boolean;
+  deletePending: boolean;
 }) {
   const {
     attributes,
@@ -161,6 +166,25 @@ function SortableTaskCard({
         )}
         <button
           type="button"
+          className="card-edit-button"
+          onClick={() => onOpen(task)}
+          aria-label={`${task.title}を編集`}
+          title="編集"
+        >
+          <Pencil size={15} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="card-delete-button"
+          onClick={() => onDelete(task)}
+          disabled={deletePending}
+          aria-label={`${task.title}を削除`}
+          title="削除"
+        >
+          <Trash2 size={15} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
           className="drag-handle"
           aria-label={`${task.title}を移動`}
           title={dragDisabled ? "フィルター解除後に並び替えできます" : "ドラッグして移動"}
@@ -180,14 +204,18 @@ function KanbanColumn({
   dragDisabled,
   onOpen,
   onReview,
+  onDelete,
   reviewPendingId,
+  deletePendingId,
 }: {
   status: TaskStatus;
   tasks: Task[];
   dragDisabled: boolean;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
+  onDelete: (task: Task) => void;
   reviewPendingId: string | null;
+  deletePendingId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column-${status}` });
 
@@ -214,7 +242,9 @@ function KanbanColumn({
               dragDisabled={dragDisabled}
               onOpen={onOpen}
               onReview={onReview}
+              onDelete={onDelete}
               reviewPending={reviewPendingId === task.id}
+              deletePending={deletePendingId === task.id}
             />
           ))}
           {tasks.length === 0 && (
@@ -394,10 +424,7 @@ function TaskDialog({
             onChange={(event) => setDraft({ ...draft, is_daily: event.target.checked })}
           />
           <span className="checkbox-control" aria-hidden="true" />
-          <span className="checkbox-copy">
-            <strong><Repeat2 size={16} /> 毎日繰り返す</strong>
-            <small>完了後、翌日に「未着手」へ戻ります</small>
-          </span>
+          <span className="checkbox-copy">毎日のタスク</span>
         </label>
 
         <div className="dialog-actions">
@@ -443,6 +470,7 @@ export function TaskBoard({
   );
   const [error, setError] = useState<string | null>(null);
   const [reviewPendingId, setReviewPendingId] = useState<string | null>(null);
+  const [deletePendingId, setDeletePendingId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -561,6 +589,22 @@ export function TaskBoard({
     });
   }
 
+  function handleCardDelete(task: Task) {
+    if (!window.confirm(`「${task.title}」を削除しますか？`)) return;
+    setDeletePendingId(task.id);
+    setError(null);
+    void deleteTaskAction(task.id).then((result) => {
+      setDeletePendingId(null);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setTasks((current) => current.filter((item) => item.id !== task.id));
+      if (selectedTask?.id === task.id) setSelectedTask(null);
+      setNotice("タスクを削除しました");
+    });
+  }
+
   function closeDialog() {
     setSelectedTask(null);
     if (selectedTaskId) router.replace("/tasks", { scroll: false });
@@ -641,7 +685,9 @@ export function TaskBoard({
               dragDisabled={filtered}
               onOpen={setSelectedTask}
               onReview={handleReview}
+              onDelete={handleCardDelete}
               reviewPendingId={reviewPendingId}
+              deletePendingId={deletePendingId}
             />
           ))}
         </div>

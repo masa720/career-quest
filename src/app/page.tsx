@@ -1,4 +1,12 @@
-import { ArrowRight, CalendarDays, Check, Circle, Flame, Pencil, Repeat2 } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  Circle,
+  Flame,
+  Pencil,
+  Repeat2,
+} from "lucide-react";
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
@@ -92,7 +100,6 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
     <section className="priority-section">
       <div className="section-heading">
         <div>
-          <span>TODAY&apos;S FOCUS</span>
           <h2>今日の優先タスク</h2>
         </div>
         <span className="task-count">{tasks.length}</span>
@@ -143,11 +150,14 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
     <section className="daily-section">
       <div className="section-heading daily-heading">
         <div>
-          <span>DAILY ROUTINE</span>
-          <h2><Repeat2 size={19} aria-hidden="true" /> 毎日のタスク</h2>
+          <h2>
+            <Repeat2 size={19} aria-hidden="true" /> 毎日のタスク
+          </h2>
         </div>
         {tasks.length > 0 && (
-          <span className="daily-progress">{completedCount} / {tasks.length}</span>
+          <span className="daily-progress">
+            {completedCount} / {tasks.length}
+          </span>
         )}
       </div>
 
@@ -174,11 +184,13 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
           })}
         </div>
       ) : (
-        <Link href="/tasks/new" className="daily-empty">
+        <div className="daily-empty">
           <Repeat2 size={18} aria-hidden="true" />
-          <span><strong>毎日のタスクを作る</strong><small>作成画面で「毎日繰り返す」を選択</small></span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+          <span>
+            <strong>毎日のタスクはありません</strong>
+            <small>通常のタスク登録で「毎日のタスク」を選択できます</small>
+          </span>
+        </div>
       )}
     </section>
   );

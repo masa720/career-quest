@@ -1,6 +1,5 @@
 "use client";
 
-import { Repeat2 } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -17,7 +16,11 @@ const initialState: CreateTaskState = {};
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="button button-primary form-submit" disabled={pending}>
+    <button
+      type="submit"
+      className="button button-primary form-submit"
+      disabled={pending}
+    >
       {pending ? "保存中…" : "タスクを追加"}
     </button>
   );
@@ -62,7 +65,9 @@ export function TaskCreateForm() {
       </div>
 
       <label className="field">
-        <span>タスク名 <em>必須</em></span>
+        <span>
+          タスク名 <em>必須</em>
+        </span>
         <input
           name="title"
           required
@@ -98,13 +103,9 @@ export function TaskCreateForm() {
       <label className="checkbox-field">
         <input type="checkbox" name="is_daily" />
         <span className="checkbox-control" aria-hidden="true" />
-        <span className="checkbox-copy">
-          <strong><Repeat2 size={16} /> 毎日繰り返す</strong>
-          <small>完了しても、翌日に「未着手」へ戻ります</small>
-        </span>
+        <span className="checkbox-copy">毎日のタスクにする</span>
       </label>
 
-      <p className="form-hint">新しいタスクは「未着手」に追加されます。</p>
       <SubmitButton />
     </form>
   );

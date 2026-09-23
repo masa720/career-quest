@@ -12,7 +12,6 @@ export default function NewTaskPage() {
         <ArrowLeft size={16} /> タスク一覧
       </Link>
       <div className="page-title-block">
-        <p className="page-kicker">NEW QUEST</p>
         <h1>タスクを追加</h1>
       </div>
       <TaskCreateForm />
