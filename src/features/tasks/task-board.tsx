@@ -32,13 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 import {
   createReviewTaskAction,
@@ -61,12 +55,6 @@ import {
 } from "./types";
 
 type FilterValue<T extends string> = T | "all";
-
-const columnDescriptions: Record<TaskStatus, string> = {
-  todo: "これから取り組む",
-  doing: "いま集中する",
-  done: "積み上げた成果",
-};
 
 const noticeMessages: Record<string, string> = {
   created: "タスクを追加しました",
@@ -102,8 +90,15 @@ function TaskCardContent({ task }: { task: Task }) {
           {priorityCardLabels[task.priority]}
         </span>
         <span className="task-card-tags">
-          {task.is_daily && <span className="daily-badge"><Repeat2 size={11} />毎日</span>}
-          <span className="category-label">{categoryLabels[task.category]}</span>
+          {task.is_daily && (
+            <span className="daily-badge">
+              <Repeat2 size={11} />
+              毎日
+            </span>
+          )}
+          <span className="category-label">
+            {categoryLabels[task.category]}
+          </span>
         </span>
       </div>
       <h3>{task.title}</h3>
@@ -187,7 +182,11 @@ function SortableTaskCard({
           type="button"
           className="drag-handle"
           aria-label={`${task.title}を移動`}
-          title={dragDisabled ? "フィルター解除後に並び替えできます" : "ドラッグして移動"}
+          title={
+            dragDisabled
+              ? "フィルター解除後に並び替えできます"
+              : "ドラッグして移動"
+          }
           {...attributes}
           {...listeners}
         >
@@ -228,12 +227,14 @@ function KanbanColumn({
       <div className="column-heading">
         <div>
           <h2 id={`column-heading-${status}`}>{statusLabels[status]}</h2>
-          <p>{columnDescriptions[status]}</p>
         </div>
         <span>{tasks.length}</span>
       </div>
 
-      <SortableContext items={tasks.map((task) => task.id)} strategy={rectSortingStrategy}>
+      <SortableContext
+        items={tasks.map((task) => task.id)}
+        strategy={rectSortingStrategy}
+      >
         <div className="task-list">
           {tasks.map((task) => (
             <SortableTaskCard
@@ -270,17 +271,22 @@ function TaskDialog({
   onSaved: (task: Task) => void;
   onDeleted: (id: string) => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState(task);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.showModal();
-    return () => dialog.close();
-  }, []);
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -320,130 +326,158 @@ function TaskDialog({
   }
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="task-dialog"
-      onClose={onClose}
-      onClick={(event) => {
+    <div
+      className="task-dialog-backdrop"
+      onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <form className="dialog-panel" onSubmit={save}>
-        <div className="dialog-heading">
-          <div>
-            <span>タスク詳細</span>
-            <h2>編集する</h2>
+      <section
+        className="task-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-dialog-title"
+      >
+        <form className="dialog-panel" onSubmit={save}>
+          <div className="dialog-heading">
+            <div>
+              <span>タスク詳細</span>
+              <h2 id="task-dialog-title">編集する</h2>
+            </div>
+            <button
+              type="button"
+              className="icon-button"
+              onClick={onClose}
+              aria-label="閉じる"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button type="button" className="icon-button" onClick={onClose} aria-label="閉じる">
-            <X size={20} />
-          </button>
-        </div>
 
-        {error && <div className="form-error">{error}</div>}
+          {error && <div className="form-error">{error}</div>}
 
-        <div className="form-grid">
+          <div className="form-grid">
+            <label className="field">
+              <span>カテゴリ</span>
+              <select
+                value={draft.category}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    category: event.target.value as TaskCategory,
+                  })
+                }
+              >
+                {TASK_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {categoryLabels[category]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>優先度</span>
+              <select
+                value={draft.priority}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    priority: event.target.value as TaskPriority,
+                  })
+                }
+              >
+                {TASK_PRIORITIES.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priorityLabels[priority]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <label className="field">
-            <span>カテゴリ</span>
-            <select
-              value={draft.category}
+            <span>タスク名</span>
+            <input
+              value={draft.title}
               onChange={(event) =>
-                setDraft({ ...draft, category: event.target.value as TaskCategory })
+                setDraft({ ...draft, title: event.target.value })
+              }
+              maxLength={200}
+              required
+            />
+          </label>
+          <label className="field">
+            <span>詳細</span>
+            <textarea
+              value={draft.description ?? ""}
+              onChange={(event) =>
+                setDraft({ ...draft, description: event.target.value })
+              }
+              rows={3}
+              maxLength={5000}
+            />
+          </label>
+          <label className="field">
+            <span>メモ</span>
+            <textarea
+              value={draft.memo ?? ""}
+              onChange={(event) =>
+                setDraft({ ...draft, memo: event.target.value })
+              }
+              rows={3}
+              maxLength={5000}
+            />
+          </label>
+          <label className="field">
+            <span>ステータス</span>
+            <select
+              value={draft.status}
+              onChange={(event) =>
+                setDraft({ ...draft, status: event.target.value as TaskStatus })
               }
             >
-              {TASK_CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {categoryLabels[category]}
+              {TASK_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {statusLabels[status]}
                 </option>
               ))}
             </select>
           </label>
-          <label className="field">
-            <span>優先度</span>
-            <select
-              value={draft.priority}
+
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={draft.is_daily}
               onChange={(event) =>
-                setDraft({ ...draft, priority: event.target.value as TaskPriority })
+                setDraft({ ...draft, is_daily: event.target.checked })
               }
-            >
-              {TASK_PRIORITIES.map((priority) => (
-                <option key={priority} value={priority}>
-                  {priorityLabels[priority]}
-                </option>
-              ))}
-            </select>
+            />
+            <span className="checkbox-control" aria-hidden="true" />
+            <span className="checkbox-copy">毎日のタスク</span>
           </label>
-        </div>
 
-        <label className="field">
-          <span>タスク名</span>
-          <input
-            value={draft.title}
-            onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-            maxLength={200}
-            required
-          />
-        </label>
-        <label className="field">
-          <span>詳細</span>
-          <textarea
-            value={draft.description ?? ""}
-            onChange={(event) => setDraft({ ...draft, description: event.target.value })}
-            rows={3}
-            maxLength={5000}
-          />
-        </label>
-        <label className="field">
-          <span>メモ</span>
-          <textarea
-            value={draft.memo ?? ""}
-            onChange={(event) => setDraft({ ...draft, memo: event.target.value })}
-            rows={3}
-            maxLength={5000}
-          />
-        </label>
-        <label className="field">
-          <span>ステータス</span>
-          <select
-            value={draft.status}
-            onChange={(event) =>
-              setDraft({ ...draft, status: event.target.value as TaskStatus })
-            }
-          >
-            {TASK_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {statusLabels[status]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="checkbox-field">
-          <input
-            type="checkbox"
-            checked={draft.is_daily}
-            onChange={(event) => setDraft({ ...draft, is_daily: event.target.checked })}
-          />
-          <span className="checkbox-control" aria-hidden="true" />
-          <span className="checkbox-copy">毎日のタスク</span>
-        </label>
-
-        <div className="dialog-actions">
-          <button
-            type="button"
-            className="button button-danger"
-            onClick={remove}
-            disabled={isPending}
-          >
-            <Trash2 size={16} />
-            削除
-          </button>
-          <button type="submit" className="button button-primary" disabled={isPending}>
-            <Check size={17} />
-            {isPending ? "保存中…" : "保存する"}
-          </button>
-        </div>
-      </form>
-    </dialog>
+          <div className="dialog-actions">
+            <button
+              type="button"
+              className="button button-danger"
+              onClick={remove}
+              disabled={isPending}
+            >
+              <Trash2 size={16} />
+              削除
+            </button>
+            <button
+              type="submit"
+              className="button button-primary"
+              disabled={isPending}
+            >
+              <Check size={17} />
+              {isPending ? "保存中…" : "保存する"}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
   );
 }
 
@@ -466,7 +500,7 @@ export function TaskBoard({
     initialTasks.find((task) => task.id === selectedTaskId) ?? null,
   );
   const [notice, setNotice] = useState(
-    initialNotice ? noticeMessages[initialNotice] ?? initialNotice : null,
+    initialNotice ? (noticeMessages[initialNotice] ?? initialNotice) : null,
   );
   const [error, setError] = useState<string | null>(null);
   const [reviewPendingId, setReviewPendingId] = useState<string | null>(null);
@@ -474,8 +508,12 @@ export function TaskBoard({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 180, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   useEffect(() => {
@@ -496,7 +534,8 @@ export function TaskBoard({
     );
   }, [tasks, category, priority, query]);
 
-  const filtered = category !== "all" || priority !== "all" || query.trim() !== "";
+  const filtered =
+    category !== "all" || priority !== "all" || query.trim() !== "";
   const activeTask = tasks.find((task) => task.id === activeId) ?? null;
 
   function tasksFor(status: TaskStatus) {
@@ -523,14 +562,19 @@ export function TaskBoard({
 
     const previous = tasks;
     const orders = getColumnOrders(tasks);
-    const sourceItems = orders[draggedTask.status].filter((id) => id !== draggedId);
+    const sourceItems = orders[draggedTask.status].filter(
+      (id) => id !== draggedId,
+    );
     const targetItems =
       draggedTask.status === targetStatus
         ? sourceItems
         : orders[targetStatus].filter((id) => id !== draggedId);
 
     let nextTargetItems: string[];
-    if (draggedTask.status === targetStatus && overId !== `column-${targetStatus}`) {
+    if (
+      draggedTask.status === targetStatus &&
+      overId !== `column-${targetStatus}`
+    ) {
       const oldIndex = orders[targetStatus].indexOf(draggedId);
       const newIndex = orders[targetStatus].indexOf(overId);
       if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
@@ -538,15 +582,24 @@ export function TaskBoard({
     } else {
       const targetIndex = targetItems.indexOf(overId);
       nextTargetItems = [...targetItems];
-      nextTargetItems.splice(targetIndex < 0 ? nextTargetItems.length : targetIndex, 0, draggedId);
+      nextTargetItems.splice(
+        targetIndex < 0 ? nextTargetItems.length : targetIndex,
+        0,
+        draggedId,
+      );
     }
 
     orders[draggedTask.status] = sourceItems;
     orders[targetStatus] = nextTargetItems;
 
-    const positions = new Map<string, { status: TaskStatus; position: number }>();
+    const positions = new Map<
+      string,
+      { status: TaskStatus; position: number }
+    >();
     for (const status of TASK_STATUSES) {
-      orders[status].forEach((id, position) => positions.set(id, { status, position }));
+      orders[status].forEach((id, position) =>
+        positions.set(id, { status, position }),
+      );
     }
     const next = tasks.map((task) => {
       const placement = positions.get(task.id);
@@ -665,7 +718,8 @@ export function TaskBoard({
 
       {filtered && (
         <p className="filter-note">
-          {filteredTasks.length}件を表示中 · 並び替えはフィルター解除後に使えます
+          {filteredTasks.length}件を表示中 ·
+          並び替えはフィルター解除後に使えます
         </p>
       )}
 

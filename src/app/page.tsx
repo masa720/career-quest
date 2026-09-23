@@ -1,8 +1,6 @@
 import {
   ArrowRight,
   CalendarDays,
-  Check,
-  Circle,
   Flame,
   Pencil,
   Repeat2,
@@ -10,6 +8,7 @@ import {
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
+import { TaskCompleteButton } from "@/components/task-complete-button";
 import {
   categoryLabels,
   priorityCardLabels,
@@ -74,7 +73,6 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
         <details className="settings-details">
           <summary>
             <Pencil size={14} aria-hidden="true" />
-            期限を編集
           </summary>
           <form action={updateSettingsAction}>
             <input
@@ -108,24 +106,23 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
       {tasks.length > 0 ? (
         <div className="priority-list">
           {tasks.map((task, index) => (
-            <Link
-              href={`/tasks?task=${task.id}`}
-              className="priority-item"
-              key={task.id}
-            >
-              <span className="priority-index">0{index + 1}</span>
-              <span className="priority-copy">
-                <span>
-                  <b className={`priority-text priority-${task.priority}`}>
-                    {priorityCardLabels[task.priority]}
-                  </b>
-                  <i>·</i>
-                  {categoryLabels[task.category]}
+            <div className="priority-item" key={task.id}>
+              <TaskCompleteButton taskId={task.id} title={task.title} />
+              <Link href={`/tasks?task=${task.id}`} className="priority-item-link">
+                <span className="priority-index">0{index + 1}</span>
+                <span className="priority-copy">
+                  <span>
+                    <b className={`priority-text priority-${task.priority}`}>
+                      {priorityCardLabels[task.priority]}
+                    </b>
+                    <i>·</i>
+                    {categoryLabels[task.category]}
+                  </span>
+                  <strong>{task.title}</strong>
                 </span>
-                <strong>{task.title}</strong>
-              </span>
-              <ArrowRight size={18} aria-hidden="true" />
-            </Link>
+                <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+            </div>
           ))}
         </div>
       ) : (
@@ -166,20 +163,23 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
           {tasks.map((task) => {
             const completed = task.status === "done";
             return (
-              <Link
+              <div
                 key={task.id}
-                href={`/tasks?task=${task.id}`}
                 className={`daily-item ${completed ? "is-complete" : ""}`}
               >
-                <span className="daily-check" aria-hidden="true">
-                  {completed ? <Check size={16} /> : <Circle size={16} />}
-                </span>
-                <span>
-                  <strong>{task.title}</strong>
-                  <small>{categoryLabels[task.category]}</small>
-                </span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
+                <TaskCompleteButton
+                  taskId={task.id}
+                  title={task.title}
+                  completed={completed}
+                />
+                <Link href={`/tasks?task=${task.id}`} className="daily-item-link">
+                  <span>
+                    <strong>{task.title}</strong>
+                    <small>{categoryLabels[task.category]}</small>
+                  </span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              </div>
             );
           })}
         </div>

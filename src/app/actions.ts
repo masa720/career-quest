@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import type { Task } from "@/features/tasks/types";
 import {
+  completeTask,
   createReviewTask,
   createTask,
   deleteTask,
@@ -79,6 +80,23 @@ export async function moveTaskAction(input: unknown): Promise<MutationResult> {
     return {
       ok: false,
       error: error instanceof Error ? error.message : "移動に失敗しました。",
+    };
+  }
+}
+
+export async function completeTaskAction(input: unknown): Promise<MutationResult> {
+  const parsed = taskIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "タスクIDが正しくありません。" };
+
+  try {
+    const task = await completeTask(parsed.data);
+    revalidatePath("/");
+    revalidatePath("/tasks");
+    return { ok: true, task };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "完了にできませんでした。",
     };
   }
 }

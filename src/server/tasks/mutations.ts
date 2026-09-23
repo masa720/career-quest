@@ -64,6 +64,28 @@ export async function moveTask(
   return data[0];
 }
 
+export async function completeTask(taskId: string): Promise<Task> {
+  const supabase = createServerSupabaseClient();
+  const { data: allTasks, error } = await supabase
+    .from("tasks")
+    .select("id, status")
+    .is("deleted_at", null)
+    .order("position");
+
+  if (error) throw new Error("タスクの並び順を取得できませんでした。");
+
+  const target = allTasks?.find((task) => task.id === taskId);
+  if (!target) throw new Error("タスクが見つかりません。");
+
+  const columnOrders: ColumnOrders = { todo: [], doing: [], done: [] };
+  for (const task of allTasks ?? []) {
+    if (task.id !== taskId) columnOrders[task.status].push(task.id);
+  }
+  columnOrders.done.push(taskId);
+
+  return moveTask(taskId, "done", columnOrders);
+}
+
 export async function updateTask(
   input: TaskDraft & { id: string; status: TaskStatus },
 ): Promise<Task> {

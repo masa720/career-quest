@@ -66,7 +66,7 @@ export function TaskCreateForm() {
 
       <label className="field">
         <span>
-          タスク名 <em>必須</em>
+          タスク名 <em>*</em>
         </span>
         <input
           name="title"
