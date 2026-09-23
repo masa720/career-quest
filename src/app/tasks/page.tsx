@@ -20,7 +20,9 @@ export default async function TasksPage({
     tasks = await getTasks();
   } catch (error) {
     loadError =
-      error instanceof Error ? error.message : "Supabaseの設定を確認してください。";
+      error instanceof Error
+        ? error.message
+        : "Supabaseの設定を確認してください。";
   }
 
   if (loadError) {
@@ -44,7 +46,6 @@ export default async function TasksPage({
         <div>
           <p className="page-kicker">QUEST BOARD</p>
           <h1>タスク一覧</h1>
-          <p>カードをドラッグして、進み具合を更新できます。</p>
         </div>
         <Link href="/tasks/new" className="button button-primary">
           <Plus size={18} /> タスクを追加

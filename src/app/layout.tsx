@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     default: "CareerQuest",
     template: "%s | CareerQuest",
   },
-  description: "次のキャリアへ、今日の一歩。個人用の転職準備タスク管理アプリ。",
+  description: "タスク管理アプリ。",
   applicationName: "CareerQuest",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -24,14 +24,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1d4b42",
+  themeColor: "#d22630",
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
       <body>

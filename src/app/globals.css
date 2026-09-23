@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #18332e;
-  --ink-soft: #5e706b;
-  --green: #1d4b42;
-  --green-hover: #153c34;
-  --mint: #dcece5;
-  --mint-soft: #edf5f1;
+  --ink: #362526;
+  --ink-soft: #75696a;
+  --brand: #d22630;
+  --brand-hover: #ad1c25;
+  --brand-soft: #f4d9dc;
+  --brand-subtle: #fbeced;
   --paper: #f5f5ef;
   --surface: #fffefa;
-  --line: #dfe5de;
+  --line: #eadedf;
   --orange: #e27742;
-  --red: #a53f32;
-  --shadow: 0 10px 30px rgba(29, 75, 66, 0.07);
+  --red: #8f1f2c;
+  --shadow: 0 10px 30px rgba(210, 38, 48, 0.07);
 }
 
 * {
@@ -29,7 +29,7 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    linear-gradient(rgba(29, 75, 66, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(210, 38, 48, 0.025) 1px, transparent 1px),
     var(--paper);
   background-size: 100% 72px;
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
@@ -66,7 +66,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible {
-  outline: 3px solid rgba(29, 75, 66, 0.23);
+  outline: 3px solid rgba(210, 38, 48, 0.23);
   outline-offset: 2px;
 }
 
@@ -74,7 +74,7 @@ summary:focus-visible {
   position: sticky;
   z-index: 30;
   top: 0;
-  border-bottom: 1px solid rgba(29, 75, 66, 0.1);
+  border-bottom: 1px solid rgba(210, 38, 48, 0.1);
   background: rgba(245, 245, 239, 0.92);
   backdrop-filter: blur(14px);
 }
@@ -100,7 +100,7 @@ summary:focus-visible {
   height: 38px;
   place-items: center;
   border-radius: 11px;
-  background: var(--green);
+  background: var(--brand);
   color: white;
   font-size: 12px;
   font-weight: 800;
@@ -142,8 +142,8 @@ summary:focus-visible {
 
 .desktop-nav a:hover,
 .desktop-nav a.active {
-  background: var(--mint);
-  color: var(--green);
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 
 .page-shell {
@@ -158,7 +158,7 @@ summary:focus-visible {
 
 .page-kicker {
   margin: 0 0 9px;
-  color: #688078;
+  color: #8b7174;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.19em;
@@ -214,13 +214,13 @@ summary:focus-visible {
 }
 
 .button-primary {
-  background: var(--green);
-  box-shadow: 0 7px 18px rgba(29, 75, 66, 0.17);
+  background: var(--brand);
+  box-shadow: 0 7px 18px rgba(210, 38, 48, 0.17);
   color: white;
 }
 
 .button-primary:hover:not(:disabled) {
-  background: var(--green-hover);
+  background: var(--brand-hover);
 }
 
 .button-small {
@@ -257,7 +257,7 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #688078;
+  color: #8b7174;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -302,7 +302,7 @@ summary:focus-visible {
   bottom: -68px;
   width: 175px;
   height: 175px;
-  border: 25px solid var(--mint-soft);
+  border: 25px solid var(--brand-subtle);
   border-radius: 50%;
   content: "";
   pointer-events: none;
@@ -381,12 +381,12 @@ summary:focus-visible {
 }
 
 .streak-card {
-  background: var(--green);
+  background: var(--brand);
   color: white;
 }
 
 .streak-card .card-eyebrow {
-  color: #bcd2ca;
+  color: #f2c6ca;
 }
 
 .streak-value {
@@ -422,7 +422,7 @@ summary:focus-visible {
 
 .streak-card > p {
   margin: 20px 0 0;
-  color: #cbded7;
+  color: #f5dce0;
   font-size: 12px;
 }
 
@@ -444,7 +444,7 @@ summary:focus-visible {
 }
 
 .section-heading span:first-child {
-  color: #688078;
+  color: #8b7174;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -462,8 +462,8 @@ summary:focus-visible {
   height: 30px;
   place-items: center;
   border-radius: 50%;
-  background: var(--mint-soft);
-  color: var(--green) !important;
+  background: var(--brand-subtle);
+  color: var(--brand) !important;
   font-size: 12px !important;
   letter-spacing: 0 !important;
 }
@@ -492,7 +492,7 @@ summary:focus-visible {
   margin-inline: -10px;
   padding-inline: 10px;
   border-radius: 12px;
-  background: var(--mint-soft);
+  background: var(--brand-subtle);
 }
 
 .priority-index {
@@ -551,7 +551,7 @@ summary:focus-visible {
   align-items: center;
   gap: 5px;
   margin: 19px 0 0 auto;
-  color: var(--green);
+  color: var(--brand);
   font-size: 12px;
   font-weight: 800;
 }
@@ -570,8 +570,8 @@ summary:focus-visible {
   height: 38px;
   place-items: center;
   border-radius: 50%;
-  background: var(--mint);
-  color: var(--green);
+  background: var(--brand-soft);
+  color: var(--brand);
   font-weight: 800;
 }
 
@@ -583,10 +583,10 @@ summary:focus-visible {
 
 .inline-notice,
 .toast {
-  border: 1px solid #c9ded4;
+  border: 1px solid #efc6ca;
   border-radius: 12px;
-  background: #eff8f3;
-  color: var(--green);
+  background: #fff1f2;
+  color: var(--brand);
   font-size: 13px;
   font-weight: 700;
 }
@@ -811,7 +811,7 @@ summary:focus-visible {
   align-items: center;
   gap: 8px;
   padding: 0 12px;
-  color: #7d8b86;
+  color: #8c7b7d;
 }
 
 .search-field input {
@@ -840,14 +840,14 @@ summary:focus-visible {
   min-height: 440px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(237, 240, 234, 0.62);
+  background: rgba(242, 235, 235, 0.7);
   padding: 14px;
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 .kanban-column.is-over {
-  border-color: #9bbcaf;
-  background: var(--mint-soft);
+  border-color: #df9ca3;
+  background: var(--brand-subtle);
 }
 
 .column-heading {
@@ -894,7 +894,7 @@ summary:focus-visible {
   border: 1px solid #dbe2dc;
   border-radius: 14px;
   background: var(--surface);
-  box-shadow: 0 3px 9px rgba(29, 75, 66, 0.045);
+  box-shadow: 0 3px 9px rgba(210, 38, 48, 0.045);
 }
 
 .task-card.is-dragging {
@@ -904,7 +904,7 @@ summary:focus-visible {
 .task-card.drag-overlay {
   width: 320px;
   padding: 16px;
-  box-shadow: 0 18px 42px rgba(29, 75, 66, 0.18);
+  box-shadow: 0 18px 42px rgba(210, 38, 48, 0.18);
   transform: rotate(1.5deg);
 }
 
@@ -919,7 +919,7 @@ summary:focus-visible {
 }
 
 .task-card:hover {
-  border-color: #bdcbc3;
+  border-color: #d9b9bc;
 }
 
 .task-card-meta {
@@ -985,7 +985,7 @@ summary:focus-visible {
 .review-button {
   gap: 5px;
   margin-right: auto;
-  color: var(--green);
+  color: var(--brand);
   font-size: 10px;
   font-weight: 800;
 }
@@ -998,13 +998,13 @@ summary:focus-visible {
   width: 34px;
   height: 30px;
   border-radius: 8px;
-  color: #99a69f;
+  color: #aa989a;
   cursor: grab;
 }
 
 .drag-handle:hover {
-  background: var(--mint-soft);
-  color: var(--green);
+  background: var(--brand-subtle);
+  color: var(--brand);
 }
 
 .drag-handle:active {
@@ -1061,7 +1061,7 @@ summary:focus-visible {
 }
 
 .task-dialog::backdrop {
-  background: rgba(15, 35, 31, 0.54);
+  background: rgba(48, 25, 28, 0.54);
   backdrop-filter: blur(4px);
 }
 
@@ -1100,7 +1100,7 @@ summary:focus-visible {
 }
 
 .icon-button:hover {
-  background: var(--mint-soft);
+  background: var(--brand-subtle);
 }
 
 .dialog-actions {
@@ -1122,8 +1122,8 @@ summary:focus-visible {
 .loading-state span {
   width: 26px;
   height: 26px;
-  border: 3px solid var(--mint);
-  border-top-color: var(--green);
+  border: 3px solid var(--brand-soft);
+  border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 800ms linear infinite;
 }
@@ -1184,8 +1184,8 @@ summary:focus-visible {
   }
 
   .mobile-nav a.active {
-    background: var(--mint-soft);
-    color: var(--green);
+    background: var(--brand-subtle);
+    color: var(--brand);
   }
 
   .page-shell {

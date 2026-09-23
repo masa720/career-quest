@@ -14,7 +14,6 @@ export default function NewTaskPage() {
       <div className="page-title-block">
         <p className="page-kicker">NEW QUEST</p>
         <h1>タスクを追加</h1>
-        <p>今日進められる、小さく具体的な一歩にしよう。</p>
       </div>
       <TaskCreateForm />
     </div>

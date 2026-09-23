@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <span>
               <strong>CareerQuest</strong>
-              <small>次のキャリアへ、今日の一歩。</small>
+              <small>後悔のない今日へ。</small>
             </span>
           </Link>
           <nav className="desktop-nav" aria-label="メインナビゲーション">

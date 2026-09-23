@@ -28,19 +28,27 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
   return (
     <section className="dashboard-card visa-card">
       <div className="card-eyebrow">
-        <span className="flag" aria-hidden="true">🇨🇦</span>
+        <span className="flag" aria-hidden="true">
+          🇨🇦
+        </span>
         VISA
       </div>
       {visaExpiryDate ? (
         <>
           <p className="countdown">
-            {daysLeft === 0
-              ? "今日まで"
-              : daysLeft !== null && daysLeft > 0
-                ? <>あと <strong>{daysLeft}</strong> 日</>
-                : <span className="expired">期限を過ぎています</span>}
+            {daysLeft === 0 ? (
+              "今日まで"
+            ) : daysLeft !== null && daysLeft > 0 ? (
+              <>
+                あと <strong>{daysLeft}</strong> 日
+              </>
+            ) : (
+              <span className="expired">期限を過ぎています</span>
+            )}
           </p>
-          <p className="date-display">{formatJapaneseDate(visaExpiryDate)}</p>
+          <p className="date-display">
+            〜 {formatJapaneseDate(visaExpiryDate)}
+          </p>
         </>
       ) : (
         <div className="visa-empty">
@@ -62,7 +70,9 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
               defaultValue={visaExpiryDate ?? ""}
               aria-label="ビザ期限"
             />
-            <button type="submit" className="button button-small">保存</button>
+            <button type="submit" className="button button-small">
+              保存
+            </button>
           </form>
         </details>
       ) : (
@@ -82,7 +92,10 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
         </div>
         <div className="section-heading-actions">
           <span className="task-count">{tasks.length}</span>
-          <Link href="/tasks/new" className="button button-primary priority-add-button">
+          <Link
+            href="/tasks/new"
+            className="button button-primary priority-add-button"
+          >
             <Plus size={17} aria-hidden="true" />
             タスクを追加
           </Link>
@@ -92,7 +105,11 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
       {tasks.length > 0 ? (
         <div className="priority-list">
           {tasks.map((task, index) => (
-            <Link href={`/tasks?task=${task.id}`} className="priority-item" key={task.id}>
+            <Link
+              href={`/tasks?task=${task.id}`}
+              className="priority-item"
+              key={task.id}
+            >
               <span className="priority-index">0{index + 1}</span>
               <span className="priority-copy">
                 <span>
@@ -141,13 +158,16 @@ export default async function HomePage({
       getCurrentStreak(settings.timezone),
     ]);
   } catch (error) {
-    loadError = error instanceof Error ? error.message : "データを読み込めませんでした。";
+    loadError =
+      error instanceof Error ? error.message : "データを読み込めませんでした。";
   }
 
   return (
     <div className="home-page">
       {notice && homeNotices[notice] && (
-        <div className="inline-notice" role="status">{homeNotices[notice]}</div>
+        <div className="inline-notice" role="status">
+          {homeNotices[notice]}
+        </div>
       )}
 
       <div className="dashboard-grid">
@@ -155,12 +175,15 @@ export default async function HomePage({
         <section className="dashboard-card streak-card">
           <div className="card-eyebrow">CURRENT STREAK</div>
           <div className="streak-value">
-            <span className="flame-icon"><Flame size={25} fill="currentColor" /></span>
-            <strong>{streak}</strong><span>日連続</span>
+            <span className="flame-icon">
+              <Flame size={25} fill="currentColor" />
+            </span>
+            <strong>{streak}</strong>
+            <span>日連続</span>
           </div>
           <p>
             {streak > 0
-              ? "昨日までの流れも、今日の一歩も大切に。"
+              ? "継続は力なり。"
               : "今日ひとつ完了して、ストリークを始めよう。"}
           </p>
         </section>
@@ -172,7 +195,9 @@ export default async function HomePage({
             <strong>Supabaseに未接続です</strong>
             <span>{loadError}</span>
           </div>
-          <p><code>.env.local</code> を設定すると、保存済みデータが表示されます。</p>
+          <p>
+            <code>.env.local</code> を設定すると、保存済みデータが表示されます。
+          </p>
         </section>
       )}
 
