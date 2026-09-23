@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { completeTaskAction } from "@/app/actions";
+import { setTaskCompletionAction } from "@/app/actions";
 
 export function TaskCompleteButton({
   taskId,
@@ -19,11 +19,14 @@ export function TaskCompleteButton({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  function complete() {
-    if (completed || isPending) return;
+  function toggleCompletion() {
+    if (isPending) return;
     setError(null);
     startTransition(async () => {
-      const result = await completeTaskAction(taskId);
+      const result = await setTaskCompletionAction({
+        id: taskId,
+        isCompleted: !completed,
+      });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -36,13 +39,13 @@ export function TaskCompleteButton({
     <button
       type="button"
       className={`task-complete-checkbox ${completed ? "is-checked" : ""}`}
-      onClick={complete}
-      disabled={completed || isPending}
+      onClick={toggleCompletion}
+      disabled={isPending}
       role="checkbox"
       aria-checked={completed}
-      aria-label={completed ? `${title}は完了済み` : `${title}を完了にする`}
+      aria-label={completed ? `${title}を未着手に戻す` : `${title}を完了にする`}
       aria-busy={isPending}
-      title={error ?? (completed ? "完了済み" : "完了にする")}
+      title={error ?? (completed ? "未着手に戻す" : "完了にする")}
     >
       {(completed || isPending) && <Check size={13} aria-hidden="true" />}
     </button>

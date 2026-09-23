@@ -1,10 +1,10 @@
 import "server-only";
 
-import type { Task, TaskStatus } from "@/features/tasks/types";
+import type { Task } from "@/features/tasks/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const activeTaskColumns =
-  "id, category, title, priority, description, memo, status, position, is_daily, review_of_task_id, created_at, updated_at, completed_at, deleted_at";
+  "id, category, title, priority, description, memo, is_completed, position, is_daily, review_of_task_id, created_at, updated_at, completed_at, deleted_at";
 
 function throwDatabaseError(message: string, cause: { message: string } | null) {
   if (cause) {
@@ -19,7 +19,7 @@ export async function getTasks(): Promise<Task[]> {
     .from("tasks")
     .select(activeTaskColumns)
     .is("deleted_at", null)
-    .order("status")
+    .order("is_completed")
     .order("position")
     .order("created_at");
 
@@ -52,7 +52,7 @@ export async function getDailyTasks(): Promise<Task[]> {
     .filter((task) => task.is_daily)
     .sort(
       (a, b) =>
-        Number(a.status === "done") - Number(b.status === "done") ||
+        Number(a.is_completed) - Number(b.is_completed) ||
         a.position - b.position,
     );
 }
@@ -61,11 +61,6 @@ export async function getPriorityTasks(
   timezone = "America/Vancouver",
 ): Promise<Task[]> {
   const tasks = await getTasks();
-  const statusRank: Record<TaskStatus, number> = {
-    doing: 0,
-    todo: 1,
-    done: 2,
-  };
   const priorityRank = { high: 0, medium: 1, low: 2 } as const;
 
   const dateFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -77,10 +72,9 @@ export async function getPriorityTasks(
   const today = dateFormatter.format(new Date());
   const nonDailyTasks = tasks.filter((task) => !task.is_daily);
   const activeTasks = nonDailyTasks
-    .filter((task) => task.status !== "done")
+    .filter((task) => !task.is_completed)
     .sort(
       (a, b) =>
-        statusRank[a.status] - statusRank[b.status] ||
         priorityRank[a.priority] - priorityRank[b.priority] ||
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     )
@@ -88,7 +82,7 @@ export async function getPriorityTasks(
   const completedToday = nonDailyTasks
     .filter(
       (task) =>
-        task.status === "done" &&
+        task.is_completed &&
         task.completed_at !== null &&
         dateFormatter.format(new Date(task.completed_at)) === today,
     )

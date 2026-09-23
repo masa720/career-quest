@@ -5,7 +5,6 @@ import {
   CircleDashed,
   Pencil,
   Repeat2,
-  Rocket,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -13,18 +12,10 @@ import { notFound } from "next/navigation";
 import {
   categoryLabels,
   priorityCardLabels,
-  statusLabels,
-  type TaskStatus,
 } from "@/features/tasks/types";
 import { getTask } from "@/server/tasks/queries";
 
 export const dynamic = "force-dynamic";
-
-const statusIcons = {
-  todo: CircleDashed,
-  doing: Rocket,
-  done: CheckCircle2,
-} satisfies Record<TaskStatus, typeof CircleDashed>;
 
 function formatDate(value: string | null) {
   if (!value) return "—";
@@ -47,7 +38,7 @@ export default async function TaskDetailPage({
   const task = await getTask(id);
   if (!task) notFound();
 
-  const StatusIcon = statusIcons[task.status];
+  const StatusIcon = task.is_completed ? CheckCircle2 : CircleDashed;
 
   return (
     <div className="task-detail-page">
@@ -82,7 +73,7 @@ export default async function TaskDetailPage({
         <div className="task-detail-status">
           <StatusIcon size={19} aria-hidden="true" />
           <span>ステータス</span>
-          <strong>{statusLabels[task.status]}</strong>
+          <strong>{task.is_completed ? "完了" : "未着手"}</strong>
         </div>
 
         <section className="task-detail-section">

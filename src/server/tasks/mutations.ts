@@ -1,10 +1,7 @@
 import "server-only";
 
-import type { Json } from "@/lib/supabase/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Task, TaskDraft, TaskStatus } from "@/features/tasks/types";
-
-type ColumnOrders = Record<TaskStatus, string[]>;
+import type { Task, TaskDraft } from "@/features/tasks/types";
 
 function cleanOptionalText(value: string | null) {
   return value?.trim() || null;
@@ -15,7 +12,7 @@ export async function createTask(input: TaskDraft): Promise<Task> {
   const { data: lastTask, error: positionError } = await supabase
     .from("tasks")
     .select("position")
-    .eq("status", "todo")
+    .eq("is_completed", false)
     .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
@@ -30,7 +27,7 @@ export async function createTask(input: TaskDraft): Promise<Task> {
       title: input.title.trim(),
       description: cleanOptionalText(input.description),
       memo: cleanOptionalText(input.memo),
-      status: "todo",
+      is_completed: false,
       position: (lastTask?.position ?? -1) + 1,
     })
     .select()
@@ -44,55 +41,31 @@ export async function createTask(input: TaskDraft): Promise<Task> {
   return data;
 }
 
-export async function moveTask(
+export async function setTaskCompletion(
   taskId: string,
-  targetStatus: TaskStatus,
-  columnOrders: ColumnOrders,
+  isCompleted: boolean,
 ): Promise<Task> {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.rpc("move_task", {
+  const { data, error } = await supabase.rpc("set_task_completion", {
     p_task_id: taskId,
-    p_target_status: targetStatus,
-    p_column_orders: columnOrders as Json,
+    p_is_completed: isCompleted,
   });
 
   if (error || !data?.[0]) {
-    console.error("moveTask", error);
-    throw new Error("タスクを移動できませんでした。");
+    console.error("setTaskCompletion", error);
+    throw new Error("完了状態を更新できませんでした。");
   }
 
   return data[0];
 }
 
-export async function completeTask(taskId: string): Promise<Task> {
-  const supabase = await createServerSupabaseClient();
-  const { data: allTasks, error } = await supabase
-    .from("tasks")
-    .select("id, status")
-    .is("deleted_at", null)
-    .order("position");
-
-  if (error) throw new Error("タスクの並び順を取得できませんでした。");
-
-  const target = allTasks?.find((task) => task.id === taskId);
-  if (!target) throw new Error("タスクが見つかりません。");
-
-  const columnOrders: ColumnOrders = { todo: [], doing: [], done: [] };
-  for (const task of allTasks ?? []) {
-    if (task.id !== taskId) columnOrders[task.status].push(task.id);
-  }
-  columnOrders.done.push(taskId);
-
-  return moveTask(taskId, "done", columnOrders);
-}
-
 export async function updateTask(
-  input: TaskDraft & { id: string; status: TaskStatus },
+  input: TaskDraft & { id: string; is_completed: boolean },
 ): Promise<Task> {
   const supabase = await createServerSupabaseClient();
   const { data: current, error: currentError } = await supabase
     .from("tasks")
-    .select("status")
+    .select("is_completed")
     .eq("id", input.id)
     .is("deleted_at", null)
     .single();
@@ -119,23 +92,9 @@ export async function updateTask(
     throw new Error("タスクを更新できませんでした。");
   }
 
-  if (current.status === input.status) return data;
+  if (current.is_completed === input.is_completed) return data;
 
-  const { data: allTasks, error: orderError } = await supabase
-    .from("tasks")
-    .select("id, status")
-    .is("deleted_at", null)
-    .order("position");
-
-  if (orderError) throw new Error("タスクの並び順を取得できませんでした。");
-
-  const columnOrders: ColumnOrders = { todo: [], doing: [], done: [] };
-  for (const task of allTasks ?? []) {
-    if (task.id !== input.id) columnOrders[task.status].push(task.id);
-  }
-  columnOrders[input.status].push(input.id);
-
-  const moved = await moveTask(input.id, input.status, columnOrders);
+  const moved = await setTaskCompletion(input.id, input.is_completed);
   return { ...data, ...moved };
 }
 
@@ -159,7 +118,7 @@ export async function createReviewTask(id: string): Promise<Task> {
     .from("tasks")
     .select("category, title, priority, description")
     .eq("id", id)
-    .eq("status", "done")
+    .eq("is_completed", true)
     .is("deleted_at", null)
     .single();
 
@@ -170,7 +129,7 @@ export async function createReviewTask(id: string): Promise<Task> {
   const { data: lastTask, error: positionError } = await supabase
     .from("tasks")
     .select("position")
-    .eq("status", "todo")
+    .eq("is_completed", false)
     .is("deleted_at", null)
     .order("position", { ascending: false })
     .limit(1)
@@ -188,7 +147,7 @@ export async function createReviewTask(id: string): Promise<Task> {
       ...original,
       title: reviewTitle,
       memo: null,
-      status: "todo",
+      is_completed: false,
       is_daily: false,
       completed_at: null,
       review_of_task_id: id,

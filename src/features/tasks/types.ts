@@ -7,11 +7,8 @@ export const TASK_CATEGORIES = [
 ] as const;
 
 export const TASK_PRIORITIES = ["high", "medium", "low"] as const;
-export const TASK_STATUSES = ["todo", "doing", "done"] as const;
-
 export type TaskCategory = (typeof TASK_CATEGORIES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
-export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 export type Task = {
   id: string;
@@ -20,7 +17,7 @@ export type Task = {
   priority: TaskPriority;
   description: string | null;
   memo: string | null;
-  status: TaskStatus;
+  is_completed: boolean;
   position: number;
   is_daily: boolean;
   review_of_task_id: string | null;
@@ -53,10 +50,4 @@ export const priorityCardLabels: Record<TaskPriority, string> = {
   high: "HIGH",
   medium: "MEDIUM",
   low: "LOW",
-};
-
-export const statusLabels: Record<TaskStatus, string> = {
-  todo: "未着手",
-  doing: "進行中",
-  done: "完了",
 };

@@ -1,27 +1,6 @@
 "use client";
 
 import {
-  closestCorners,
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  rectSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   Check,
   Pencil,
   Repeat2,
@@ -36,30 +15,21 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   createReviewTaskAction,
   deleteTaskAction,
-  moveTaskAction,
+  setTaskCompletionAction,
   updateTaskAction,
 } from "@/app/actions";
 import {
   TASK_CATEGORIES,
   TASK_PRIORITIES,
-  TASK_STATUSES,
   categoryLabels,
   priorityCardLabels,
   priorityLabels,
-  statusLabels,
   type Task,
   type TaskCategory,
   type TaskPriority,
-  type TaskStatus,
 } from "./types";
 
 type FilterValue<T extends string> = T | "all";
-
-const statusEmoji: Record<TaskStatus, string> = {
-  todo: "📝",
-  doing: "🚀",
-  done: "✅",
-};
 
 const noticeMessages: Record<string, string> = {
   created: "タスクを追加しました",
@@ -71,20 +41,6 @@ function sortTasks(tasks: Task[]) {
       a.position - b.position ||
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
-}
-
-function getColumnOrders(tasks: Task[]): Record<TaskStatus, string[]> {
-  return {
-    todo: sortTasks(tasks.filter((task) => task.status === "todo")).map(
-      (task) => task.id,
-    ),
-    doing: sortTasks(tasks.filter((task) => task.status === "doing")).map(
-      (task) => task.id,
-    ),
-    done: sortTasks(tasks.filter((task) => task.status === "done")).map(
-      (task) => task.id,
-    ),
-  };
 }
 
 function TaskCardContent({ task }: { task: Task }) {
@@ -112,52 +68,60 @@ function TaskCardContent({ task }: { task: Task }) {
   );
 }
 
-function SortableTaskCard({
+function TaskCard({
   task,
-  dragDisabled,
   onDetails,
+  onToggle,
   onOpen,
   onReview,
   onDelete,
   reviewPending,
   deletePending,
+  togglePending,
 }: {
   task: Task;
-  dragDisabled: boolean;
   onDetails: (task: Task) => void;
+  onToggle: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
   reviewPending: boolean;
   deletePending: boolean;
+  togglePending: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id, disabled: dragDisabled });
-
   return (
-    <article
-      ref={setNodeRef}
-      className={`task-card ${isDragging ? "is-dragging" : ""} ${dragDisabled ? "is-drag-disabled" : ""}`}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      {...attributes}
-      {...listeners}
-    >
-      <button
-        type="button"
-        className="card-main"
-        onClick={() => onDetails(task)}
-        aria-label={`${task.title}の詳細を見る`}
-      >
-        <TaskCardContent task={task} />
-      </button>
+    <article className="task-card">
+      <div className="task-card-body">
+        <button
+          type="button"
+          className={`task-complete-checkbox ${task.is_completed ? "is-checked" : ""}`}
+          onClick={() => onToggle(task)}
+          disabled={togglePending}
+          role="checkbox"
+          aria-checked={task.is_completed}
+          aria-label={
+            task.is_completed
+              ? `${task.title}を未着手に戻す`
+              : `${task.title}を完了にする`
+          }
+          aria-busy={togglePending}
+          title={task.is_completed ? "未着手に戻す" : "完了にする"}
+        >
+          {(task.is_completed || togglePending) && (
+            <Check size={13} aria-hidden="true" />
+          )}
+        </button>
+        <button
+          type="button"
+          className="card-main"
+          onClick={() => onDetails(task)}
+          aria-label={`${task.title}の詳細を見る`}
+        >
+          <TaskCardContent task={task} />
+        </button>
+      </div>
       <div className="card-actions">
-        {task.status === "done" && (
+        {task.is_completed && (
           <button
             type="button"
             className="review-button"
@@ -193,69 +157,64 @@ function SortableTaskCard({
 }
 
 function KanbanColumn({
-  status,
+  completed,
   tasks,
-  dragDisabled,
   onDetails,
+  onToggle,
   onOpen,
   onReview,
   onDelete,
   reviewPendingId,
   deletePendingId,
+  togglePendingId,
 }: {
-  status: TaskStatus;
+  completed: boolean;
   tasks: Task[];
-  dragDisabled: boolean;
   onDetails: (task: Task) => void;
+  onToggle: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
   reviewPendingId: string | null;
   deletePendingId: string | null;
+  togglePendingId: string | null;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `column-${status}` });
-
   return (
     <section
-      ref={setNodeRef}
-      className={`kanban-column ${isOver ? "is-over" : ""}`}
-      aria-labelledby={`column-heading-${status}`}
+      className="kanban-column"
+      aria-labelledby={`column-heading-${completed ? "done" : "todo"}`}
     >
       <div className="column-heading">
         <div>
-          <h2 id={`column-heading-${status}`}>
-            {statusEmoji[status]} {statusLabels[status]}
+          <h2 id={`column-heading-${completed ? "done" : "todo"}`}>
+            {completed ? "✅ 完了" : "📝 未着手"}
           </h2>
         </div>
         <span>{tasks.length}</span>
       </div>
 
-      <SortableContext
-        items={tasks.map((task) => task.id)}
-        strategy={rectSortingStrategy}
-      >
-        <div className="task-list">
+      <div className="task-list">
           {tasks.map((task) => (
-            <SortableTaskCard
+            <TaskCard
               key={task.id}
               task={task}
-              dragDisabled={dragDisabled}
               onDetails={onDetails}
+              onToggle={onToggle}
               onOpen={onOpen}
               onReview={onReview}
               onDelete={onDelete}
               reviewPending={reviewPendingId === task.id}
               deletePending={deletePendingId === task.id}
+              togglePending={togglePendingId === task.id}
             />
           ))}
           {tasks.length === 0 && (
             <div className="empty-column">
-              <span aria-hidden="true">{status === "done" ? "✓" : "·"}</span>
+              <span aria-hidden="true">{completed ? "✓" : "·"}</span>
               タスクはありません
             </div>
           )}
-        </div>
-      </SortableContext>
+      </div>
     </section>
   );
 }
@@ -299,7 +258,7 @@ function TaskDialog({
         priority: draft.priority,
         description: draft.description ?? "",
         memo: draft.memo ?? "",
-        status: draft.status,
+        is_completed: draft.is_completed,
         is_daily: draft.is_daily,
       });
       if (!result.ok || !result.task) {
@@ -428,20 +387,16 @@ function TaskDialog({
               maxLength={5000}
             />
           </label>
-          <label className="field">
-            <span>ステータス</span>
-            <select
-              value={draft.status}
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={draft.is_completed}
               onChange={(event) =>
-                setDraft({ ...draft, status: event.target.value as TaskStatus })
+                setDraft({ ...draft, is_completed: event.target.checked })
               }
-            >
-              {TASK_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {statusLabels[status]}
-                </option>
-              ))}
-            </select>
+            />
+            <span className="checkbox-control" aria-hidden="true" />
+            <span className="checkbox-copy">完了</span>
           </label>
 
           <label className="checkbox-field">
@@ -495,7 +450,6 @@ export function TaskBoard({
   const [category, setCategory] = useState<FilterValue<TaskCategory>>("all");
   const [priority, setPriority] = useState<FilterValue<TaskPriority>>("all");
   const [query, setQuery] = useState("");
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(
     initialTasks.find((task) => task.id === selectedTaskId) ?? null,
   );
@@ -505,16 +459,7 @@ export function TaskBoard({
   const [error, setError] = useState<string | null>(null);
   const [reviewPendingId, setReviewPendingId] = useState<string | null>(null);
   const [deletePendingId, setDeletePendingId] = useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 180, tolerance: 8 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const [togglePendingId, setTogglePendingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!notice) return;
@@ -536,96 +481,10 @@ export function TaskBoard({
 
   const filtered =
     category !== "all" || priority !== "all" || query.trim() !== "";
-  const activeTask = tasks.find((task) => task.id === activeId) ?? null;
-
-  function tasksFor(status: TaskStatus) {
-    return sortTasks(filteredTasks.filter((task) => task.status === status));
-  }
-
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(String(event.active.id));
-  }
-
-  function handleDragEnd(event: DragEndEvent) {
-    setActiveId(null);
-    if (!event.over || filtered) return;
-
-    const draggedId = String(event.active.id);
-    const overId = String(event.over.id);
-    const draggedTask = tasks.find((task) => task.id === draggedId);
-    if (!draggedTask) return;
-
-    const targetStatus = overId.startsWith("column-")
-      ? (overId.replace("column-", "") as TaskStatus)
-      : tasks.find((task) => task.id === overId)?.status;
-    if (!targetStatus) return;
-
-    const previous = tasks;
-    const orders = getColumnOrders(tasks);
-    const sourceItems = orders[draggedTask.status].filter(
-      (id) => id !== draggedId,
+  function tasksFor(completed: boolean) {
+    return sortTasks(
+      filteredTasks.filter((task) => task.is_completed === completed),
     );
-    const targetItems =
-      draggedTask.status === targetStatus
-        ? sourceItems
-        : orders[targetStatus].filter((id) => id !== draggedId);
-
-    let nextTargetItems: string[];
-    if (
-      draggedTask.status === targetStatus &&
-      overId !== `column-${targetStatus}`
-    ) {
-      const oldIndex = orders[targetStatus].indexOf(draggedId);
-      const newIndex = orders[targetStatus].indexOf(overId);
-      if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return;
-      nextTargetItems = arrayMove(orders[targetStatus], oldIndex, newIndex);
-    } else {
-      const targetIndex = targetItems.indexOf(overId);
-      nextTargetItems = [...targetItems];
-      nextTargetItems.splice(
-        targetIndex < 0 ? nextTargetItems.length : targetIndex,
-        0,
-        draggedId,
-      );
-    }
-
-    orders[draggedTask.status] = sourceItems;
-    orders[targetStatus] = nextTargetItems;
-
-    const positions = new Map<
-      string,
-      { status: TaskStatus; position: number }
-    >();
-    for (const status of TASK_STATUSES) {
-      orders[status].forEach((id, position) =>
-        positions.set(id, { status, position }),
-      );
-    }
-    const next = tasks.map((task) => {
-      const placement = positions.get(task.id);
-      return placement ? { ...task, ...placement } : task;
-    });
-
-    setTasks(next);
-    setError(null);
-    void moveTaskAction({
-      taskId: draggedId,
-      targetStatus,
-      columnOrders: orders,
-    }).then((result) => {
-      if (!result.ok) {
-        setTasks(previous);
-        setError(result.error);
-        return;
-      }
-      if (result.task) {
-        setTasks((current) =>
-          current.map((task) =>
-            task.id === result.task?.id ? { ...task, ...result.task } : task,
-          ),
-        );
-      }
-    });
   }
 
   function handleReview(task: Task) {
@@ -639,6 +498,26 @@ export function TaskBoard({
       }
       setTasks((current) => [...current, result.task as Task]);
       setNotice("復習タスクを追加しました");
+    });
+  }
+
+  function handleToggle(task: Task) {
+    setTogglePendingId(task.id);
+    setError(null);
+    void setTaskCompletionAction({
+      id: task.id,
+      isCompleted: !task.is_completed,
+    }).then((result) => {
+      setTogglePendingId(null);
+      if (!result.ok || !result.task) {
+        setError(result.ok ? "完了状態の更新に失敗しました。" : result.error);
+        return;
+      }
+      setTasks((current) =>
+        current.map((item) =>
+          item.id === result.task?.id ? (result.task as Task) : item,
+        ),
+      );
     });
   }
 
@@ -717,43 +596,26 @@ export function TaskBoard({
       </div>
 
       {filtered && (
-        <p className="filter-note">
-          {filteredTasks.length}件を表示中 ·
-          並び替えはフィルター解除後に使えます
-        </p>
+        <p className="filter-note">{filteredTasks.length}件を表示中</p>
       )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragCancel={() => setActiveId(null)}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="kanban-board">
-          {TASK_STATUSES.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              tasks={tasksFor(status)}
-              dragDisabled={filtered}
-              onDetails={(task) => router.push(`/tasks/${task.id}`)}
-              onOpen={setSelectedTask}
-              onReview={handleReview}
-              onDelete={handleCardDelete}
-              reviewPendingId={reviewPendingId}
-              deletePendingId={deletePendingId}
-            />
-          ))}
-        </div>
-        <DragOverlay>
-          {activeTask && (
-            <article className="task-card drag-overlay">
-              <TaskCardContent task={activeTask} />
-            </article>
-          )}
-        </DragOverlay>
-      </DndContext>
+      <div className="kanban-board">
+        {[false, true].map((completed) => (
+          <KanbanColumn
+            key={String(completed)}
+            completed={completed}
+            tasks={tasksFor(completed)}
+            onDetails={(task) => router.push(`/tasks/${task.id}`)}
+            onToggle={handleToggle}
+            onOpen={setSelectedTask}
+            onReview={handleReview}
+            onDelete={handleCardDelete}
+            reviewPendingId={reviewPendingId}
+            deletePendingId={deletePendingId}
+            togglePendingId={togglePendingId}
+          />
+        ))}
+      </div>
 
       {selectedTask && (
         <TaskDialog

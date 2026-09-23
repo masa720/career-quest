@@ -6,16 +6,15 @@ import { z } from "zod";
 
 import type { Task } from "@/features/tasks/types";
 import {
-  completeTask,
   createReviewTask,
   createTask,
   deleteTask,
-  moveTask,
   updateTask,
+  setTaskCompletion,
 } from "@/server/tasks/mutations";
 import {
   createTaskSchema,
-  moveTaskSchema,
+  taskCompletionSchema,
   taskIdSchema,
   updateTaskSchema,
 } from "@/server/tasks/schemas";
@@ -63,40 +62,30 @@ export async function createTaskAction(
   redirect("/tasks?notice=created");
 }
 
-export async function moveTaskAction(input: unknown): Promise<MutationResult> {
-  const parsed = moveTaskSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "並び順が正しくありません。" };
+export async function setTaskCompletionAction(
+  input: unknown,
+): Promise<MutationResult> {
+  const parsed = taskCompletionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "完了状態が正しくありません。" };
+  }
 
   try {
-    const task = await moveTask(
-      parsed.data.taskId,
-      parsed.data.targetStatus,
-      parsed.data.columnOrders,
+    const task = await setTaskCompletion(
+      parsed.data.id,
+      parsed.data.isCompleted,
     );
     revalidatePath("/");
     revalidatePath("/tasks");
+    revalidatePath(`/tasks/${parsed.data.id}`);
     return { ok: true, task };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "移動に失敗しました。",
-    };
-  }
-}
-
-export async function completeTaskAction(input: unknown): Promise<MutationResult> {
-  const parsed = taskIdSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "タスクIDが正しくありません。" };
-
-  try {
-    const task = await completeTask(parsed.data);
-    revalidatePath("/");
-    revalidatePath("/tasks");
-    return { ok: true, task };
-  } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "完了にできませんでした。",
+      error:
+        error instanceof Error
+          ? error.message
+          : "完了状態を更新できませんでした。",
     };
   }
 }

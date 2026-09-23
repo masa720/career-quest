@@ -1,8 +1,4 @@
-import type {
-  TaskCategory,
-  TaskPriority,
-  TaskStatus,
-} from "@/features/tasks/types";
+import type { TaskCategory, TaskPriority } from "@/features/tasks/types";
 
 export type Json =
   | string
@@ -23,7 +19,7 @@ export type Database = {
           priority: TaskPriority;
           description: string | null;
           memo: string | null;
-          status: TaskStatus;
+          is_completed: boolean;
           position: number;
           is_daily: boolean;
           review_of_task_id: string | null;
@@ -39,7 +35,7 @@ export type Database = {
           priority?: TaskPriority;
           description?: string | null;
           memo?: string | null;
-          status?: TaskStatus;
+          is_completed?: boolean;
           position?: number;
           is_daily?: boolean;
           review_of_task_id?: string | null;
@@ -54,7 +50,7 @@ export type Database = {
           priority?: TaskPriority;
           description?: string | null;
           memo?: string | null;
-          status?: TaskStatus;
+          is_completed?: boolean;
           position?: number;
           is_daily?: boolean;
           review_of_task_id?: string | null;
@@ -105,11 +101,10 @@ export type Database = {
         Args: { p_timezone: string };
         Returns: number;
       };
-      move_task: {
+      set_task_completion: {
         Args: {
           p_task_id: string;
-          p_target_status: TaskStatus;
-          p_column_orders: Json;
+          p_is_completed: boolean;
         };
         Returns: Database["public"]["Tables"]["tasks"]["Row"][];
       };

@@ -27,38 +27,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="app-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="CareerQuest TOP">
-            <span className="brand-mark" aria-hidden="true">
-              CQ
-            </span>
-            <span>
-              <strong>CareerQuest</strong>
-              <small>後悔のない今日へ。</small>
-            </span>
-          </Link>
-          <nav className="desktop-nav" aria-label="メインナビゲーション">
-            {navItems.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={isActive(pathname, href) ? "active" : undefined}
-              >
-                <Icon size={17} aria-hidden="true" />
-                {label === "追加" ? "タスク登録" : label}
-              </Link>
-            ))}
-            <form action={signOut}>
-              <button type="submit" aria-label="ログアウト">
-                <LogOut size={17} aria-hidden="true" />
-                ログアウト
-              </button>
-            </form>
-          </nav>
-        </div>
-      </header>
-
       <main className="page-shell">{children}</main>
 
       <Link
@@ -81,6 +49,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>{label}</span>
           </Link>
         ))}
+        <form action={signOut}>
+          <button type="submit" aria-label="ログアウト">
+            <LogOut size={21} aria-hidden="true" />
+            <span>ログアウト</span>
+          </button>
+        </form>
       </nav>
     </div>
   );

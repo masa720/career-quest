@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   TASK_CATEGORIES,
   TASK_PRIORITIES,
-  TASK_STATUSES,
 } from "@/features/tasks/types";
 
 const optionalText = z
@@ -27,17 +26,12 @@ export const createTaskSchema = z.object({
 
 export const updateTaskSchema = createTaskSchema.extend({
   id: z.uuid(),
-  status: z.enum(TASK_STATUSES),
-});
-
-export const moveTaskSchema = z.object({
-  taskId: z.uuid(),
-  targetStatus: z.enum(TASK_STATUSES),
-  columnOrders: z.object({
-    todo: z.array(z.uuid()),
-    doing: z.array(z.uuid()),
-    done: z.array(z.uuid()),
-  }),
+  is_completed: z.boolean(),
 });
 
 export const taskIdSchema = z.uuid();
+
+export const taskCompletionSchema = z.object({
+  id: z.uuid(),
+  isCompleted: z.boolean(),
+});

@@ -89,7 +89,7 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
       {tasks.length > 0 ? (
         <div className="priority-list">
           {tasks.map((task) => {
-            const completed = task.status === "done";
+            const completed = task.is_completed;
             return (
               <div
                 className={`home-task-card priority-item ${completed ? "is-complete" : ""}`}
@@ -136,7 +136,7 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
 }
 
 function DailyTaskList({ tasks }: { tasks: Task[] }) {
-  const completedCount = tasks.filter((task) => task.status === "done").length;
+  const completedCount = tasks.filter((task) => task.is_completed).length;
 
   return (
     <div className="home-task-group daily-group">
@@ -154,7 +154,7 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
       {tasks.length > 0 ? (
         <div className="daily-list">
           {tasks.map((task) => {
-            const completed = task.status === "done";
+            const completed = task.is_completed;
             return (
               <div
                 key={task.id}
