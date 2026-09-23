@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/", label: "TOP", icon: Home },
-  { href: "/tasks/new", label: "追加", icon: Plus },
   { href: "/tasks", label: "タスク", icon: ListTodo },
 ] as const;
 

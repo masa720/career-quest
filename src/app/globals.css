@@ -306,7 +306,7 @@ summary:focus-visible {
   bottom: 14px;
   display: grid;
   width: min(460px, calc(100% - 28px));
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   transform: translateX(50%);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -2018,7 +2018,7 @@ summary:focus-visible {
     left: 0;
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     transform: none;
     border-top: 1px solid var(--line);
     background: rgba(255, 254, 250, 0.96);
