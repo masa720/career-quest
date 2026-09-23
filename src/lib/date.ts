@@ -14,6 +14,11 @@ function datePartsInTimezone(date: Date, timezone: string) {
   };
 }
 
+export function dateInTimezone(date: Date, timezone: string) {
+  const { year, month, day } = datePartsInTimezone(date, timezone);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 export function daysUntilDate(dateString: string, timezone: string) {
   const today = datePartsInTimezone(new Date(), timezone);
   const [year, month, day] = dateString.split("-").map(Number);

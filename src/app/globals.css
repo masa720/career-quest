@@ -306,7 +306,7 @@ summary:focus-visible {
   bottom: 14px;
   display: grid;
   width: min(460px, calc(100% - 28px));
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   transform: translateX(50%);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -705,6 +705,27 @@ summary:focus-visible {
   margin-top: 6px;
 }
 
+.settings-details .settings-logout {
+  border-top: 1px solid var(--line);
+  padding-top: 7px;
+}
+
+.settings-logout button {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff0f1;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .settings-unavailable {
   position: absolute;
   z-index: 1;
@@ -1028,6 +1049,12 @@ summary:focus-visible {
   font-style: normal;
 }
 
+.today-overdue {
+  color: #b33a27;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
 .home-task-card.is-complete .home-task-copy strong {
   color: var(--ink-soft);
   text-decoration: line-through;
@@ -1314,6 +1341,24 @@ summary:focus-visible {
   font-weight: 700;
 }
 
+.today-quick-pick {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #efd2a5;
+  border-radius: 12px;
+  background: #fff8ea;
+  padding: 10px 13px;
+}
+
+.today-quick-pick .checkbox-control {
+  width: 22px;
+  height: 22px;
+}
+
+.today-quick-pick .checkbox-copy {
+  font-size: 13px;
+}
+
 .checkbox-copy strong {
   display: flex;
   align-items: center;
@@ -1553,6 +1598,17 @@ summary:focus-visible {
   font-weight: 800;
 }
 
+.today-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #fff0d6;
+  padding: 3px 6px;
+  color: #935500;
+  font-size: 8px;
+  font-weight: 800;
+}
+
 .task-card h3 {
   margin: 11px 0 0;
   font-size: 13px;
@@ -1581,6 +1637,7 @@ summary:focus-visible {
 }
 
 .review-button,
+.card-today-button,
 .card-edit-button,
 .card-delete-button,
 .icon-button {
@@ -1594,7 +1651,6 @@ summary:focus-visible {
 
 .review-button {
   gap: 5px;
-  margin-right: auto;
   color: var(--brand);
   font-size: 10px;
   font-weight: 800;
@@ -1604,6 +1660,7 @@ summary:focus-visible {
   opacity: 0.5;
 }
 
+.card-today-button,
 .card-edit-button,
 .card-delete-button {
   width: 34px;
@@ -1612,10 +1669,26 @@ summary:focus-visible {
   color: #a99597;
 }
 
+.card-today-button {
+  margin-right: auto;
+}
+
+.card-today-button,
 .card-edit-button,
 .card-delete-button,
 .review-button {
   cursor: pointer;
+}
+
+.card-today-button:hover:not(:disabled),
+.card-today-button.is-active {
+  background: #fff0d6;
+  color: #a45e00;
+}
+
+.card-today-button:disabled {
+  cursor: wait;
+  opacity: 0.45;
 }
 
 .card-edit-button:hover {
@@ -1945,7 +2018,7 @@ summary:focus-visible {
     left: 0;
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     transform: none;
     border-top: 1px solid var(--line);
     background: rgba(255, 254, 250, 0.96);

@@ -1,7 +1,15 @@
-import { ArrowRight, CalendarDays, Flame, Pencil, Repeat2 } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Flame,
+  LogOut,
+  Pencil,
+  Repeat2,
+} from "lucide-react";
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
+import { signOut } from "@/app/login/actions";
 import { TaskCompleteButton } from "@/components/task-complete-button";
 import { VisaCountdown } from "@/components/visa-countdown";
 import {
@@ -14,7 +22,7 @@ import { getSettings, type AppSettings } from "@/server/settings/queries";
 import {
   getCurrentStreak,
   getDailyTasks,
-  getPriorityTasks,
+  getTodayTasks,
   rolloverDailyTasks,
 } from "@/server/tasks/queries";
 
@@ -68,6 +76,12 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
               保存
             </button>
           </form>
+          <form action={signOut} className="settings-logout">
+            <button type="submit">
+              <LogOut size={14} aria-hidden="true" />
+              ログアウト
+            </button>
+          </form>
         </details>
       ) : (
         <span className="settings-unavailable">DB接続後に設定できます</span>
@@ -76,12 +90,18 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
   );
 }
 
-function PriorityList({ tasks }: { tasks: Task[] }) {
+function TodayTaskList({
+  tasks,
+  timezone,
+}: {
+  tasks: Task[];
+  timezone: string;
+}) {
   return (
     <div className="home-task-group priority-group">
       <div className="section-heading">
         <div>
-          <h2>🎯 今日の優先タスク</h2>
+          <h2>🎯 今日やるタスク</h2>
         </div>
         <span className="task-count">{tasks.length}</span>
       </div>
@@ -90,6 +110,9 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
         <div className="priority-list">
           {tasks.map((task) => {
             const completed = task.is_completed;
+            const carryoverDays = task.scheduled_for
+              ? Math.max(0, -daysUntilDate(task.scheduled_for, timezone))
+              : 0;
             return (
               <div
                 className={`home-task-card priority-item ${completed ? "is-complete" : ""}`}
@@ -112,6 +135,11 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
                       </b>
                       <i>·</i>
                       {categoryLabels[task.category]}
+                      {!completed && carryoverDays > 0 && (
+                        <b className="today-overdue">
+                          🔥 {carryoverDays}日持ち越し
+                        </b>
+                      )}
                     </small>
                   </span>
                   <ArrowRight size={16} aria-hidden="true" />
@@ -123,8 +151,8 @@ function PriorityList({ tasks }: { tasks: Task[] }) {
       ) : (
         <div className="empty-priority">
           <span aria-hidden="true">✓</span>
-          <p>アクティブなタスクはありません。</p>
-          <small>次の一歩を追加しましょう。</small>
+          <p>今日やるタスクはありません。</p>
+          <small>タスク一覧からピックアップしましょう。</small>
         </div>
       )}
 
@@ -195,14 +223,16 @@ function DailyTaskList({ tasks }: { tasks: Task[] }) {
 function TaskOverview({
   dailyTasks,
   priorityTasks,
+  timezone,
 }: {
   dailyTasks: Task[];
   priorityTasks: Task[];
+  timezone: string;
 }) {
   return (
     <section className="tasks-overview">
       <DailyTaskList tasks={dailyTasks} />
-      <PriorityList tasks={priorityTasks} />
+      <TodayTaskList tasks={priorityTasks} timezone={timezone} />
     </section>
   );
 }
@@ -223,7 +253,7 @@ export default async function HomePage({
     settings = await getSettings();
     await rolloverDailyTasks();
     [tasks, dailyTasks, streak] = await Promise.all([
-      getPriorityTasks(settings.timezone),
+      getTodayTasks(settings.timezone),
       getDailyTasks(),
       getCurrentStreak(settings.timezone),
     ]);
@@ -271,7 +301,11 @@ export default async function HomePage({
         </section>
       )}
 
-      <TaskOverview dailyTasks={dailyTasks} priorityTasks={tasks} />
+      <TaskOverview
+        dailyTasks={dailyTasks}
+        priorityTasks={tasks}
+        timezone={settings?.timezone ?? "America/Vancouver"}
+      />
     </div>
   );
 }

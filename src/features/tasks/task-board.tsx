@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarCheck2,
   Check,
   Pencil,
   Repeat2,
@@ -16,6 +17,7 @@ import {
   createReviewTaskAction,
   deleteTaskAction,
   setTaskCompletionAction,
+  setTaskTodayAction,
   updateTaskAction,
 } from "@/app/actions";
 import {
@@ -57,6 +59,9 @@ function TaskCardContent({ task }: { task: Task }) {
               毎日
             </span>
           )}
+          {task.scheduled_for && !task.is_daily && (
+            <span className="today-badge">🎯 今日やる</span>
+          )}
           <span className="category-label">
             {categoryLabels[task.category]}
           </span>
@@ -72,22 +77,26 @@ function TaskCard({
   task,
   onDetails,
   onToggle,
+  onToggleToday,
   onOpen,
   onReview,
   onDelete,
   reviewPending,
   deletePending,
   togglePending,
+  todayPending,
 }: {
   task: Task;
   onDetails: (task: Task) => void;
   onToggle: (task: Task) => void;
+  onToggleToday: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
   reviewPending: boolean;
   deletePending: boolean;
   togglePending: boolean;
+  todayPending: boolean;
 }) {
   return (
     <article className="task-card">
@@ -121,6 +130,23 @@ function TaskCard({
         </button>
       </div>
       <div className="card-actions">
+        {!task.is_daily && (
+          <button
+            type="button"
+            className={`card-today-button ${task.scheduled_for ? "is-active" : ""}`}
+            onClick={() => onToggleToday(task)}
+            disabled={todayPending}
+            aria-pressed={task.scheduled_for !== null}
+            aria-label={
+              task.scheduled_for
+                ? `${task.title}を今日やるタスクから外す`
+                : `${task.title}を今日やるタスクに追加`
+            }
+            title={task.scheduled_for ? "今日やるから外す" : "今日やる"}
+          >
+            <CalendarCheck2 size={15} aria-hidden="true" />
+          </button>
+        )}
         {task.is_completed && (
           <button
             type="button"
@@ -161,23 +187,27 @@ function KanbanColumn({
   tasks,
   onDetails,
   onToggle,
+  onToggleToday,
   onOpen,
   onReview,
   onDelete,
   reviewPendingId,
   deletePendingId,
   togglePendingId,
+  todayPendingId,
 }: {
   completed: boolean;
   tasks: Task[];
   onDetails: (task: Task) => void;
   onToggle: (task: Task) => void;
+  onToggleToday: (task: Task) => void;
   onOpen: (task: Task) => void;
   onReview: (task: Task) => void;
   onDelete: (task: Task) => void;
   reviewPendingId: string | null;
   deletePendingId: string | null;
   togglePendingId: string | null;
+  todayPendingId: string | null;
 }) {
   return (
     <section
@@ -200,12 +230,14 @@ function KanbanColumn({
               task={task}
               onDetails={onDetails}
               onToggle={onToggle}
+              onToggleToday={onToggleToday}
               onOpen={onOpen}
               onReview={onReview}
               onDelete={onDelete}
               reviewPending={reviewPendingId === task.id}
               deletePending={deletePendingId === task.id}
               togglePending={togglePendingId === task.id}
+              todayPending={todayPendingId === task.id}
             />
           ))}
           {tasks.length === 0 && (
@@ -260,6 +292,7 @@ function TaskDialog({
         memo: draft.memo ?? "",
         is_completed: draft.is_completed,
         is_daily: draft.is_daily,
+        is_today: draft.scheduled_for !== null,
       });
       if (!result.ok || !result.task) {
         setError(result.ok ? "更新に失敗しました。" : result.error);
@@ -402,9 +435,37 @@ function TaskDialog({
           <label className="checkbox-field">
             <input
               type="checkbox"
+              checked={draft.scheduled_for !== null}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  scheduled_for: event.target.checked
+                    ? draft.scheduled_for ?? "today"
+                    : null,
+                  selected_at: event.target.checked
+                    ? draft.selected_at ?? "today"
+                    : null,
+                  is_daily: event.target.checked ? false : draft.is_daily,
+                })
+              }
+            />
+            <span className="checkbox-control" aria-hidden="true" />
+            <span className="checkbox-copy">今日やるタスク</span>
+          </label>
+
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
               checked={draft.is_daily}
               onChange={(event) =>
-                setDraft({ ...draft, is_daily: event.target.checked })
+                setDraft({
+                  ...draft,
+                  is_daily: event.target.checked,
+                  scheduled_for: event.target.checked
+                    ? null
+                    : draft.scheduled_for,
+                  selected_at: event.target.checked ? null : draft.selected_at,
+                })
               }
             />
             <span className="checkbox-control" aria-hidden="true" />
@@ -460,6 +521,7 @@ export function TaskBoard({
   const [reviewPendingId, setReviewPendingId] = useState<string | null>(null);
   const [deletePendingId, setDeletePendingId] = useState<string | null>(null);
   const [togglePendingId, setTogglePendingId] = useState<string | null>(null);
+  const [todayPendingId, setTodayPendingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!notice) return;
@@ -511,6 +573,28 @@ export function TaskBoard({
       setTogglePendingId(null);
       if (!result.ok || !result.task) {
         setError(result.ok ? "完了状態の更新に失敗しました。" : result.error);
+        return;
+      }
+      setTasks((current) =>
+        current.map((item) =>
+          item.id === result.task?.id ? (result.task as Task) : item,
+        ),
+      );
+    });
+  }
+
+  function handleToggleToday(task: Task) {
+    setTodayPendingId(task.id);
+    setError(null);
+    void setTaskTodayAction({
+      id: task.id,
+      isToday: task.scheduled_for === null,
+    }).then((result) => {
+      setTodayPendingId(null);
+      if (!result.ok || !result.task) {
+        setError(
+          result.ok ? "今日やるタスクの更新に失敗しました。" : result.error,
+        );
         return;
       }
       setTasks((current) =>
@@ -607,12 +691,14 @@ export function TaskBoard({
             tasks={tasksFor(completed)}
             onDetails={(task) => router.push(`/tasks/${task.id}`)}
             onToggle={handleToggle}
+            onToggleToday={handleToggleToday}
             onOpen={setSelectedTask}
             onReview={handleReview}
             onDelete={handleCardDelete}
             reviewPendingId={reviewPendingId}
             deletePendingId={deletePendingId}
             togglePendingId={togglePendingId}
+            todayPendingId={todayPendingId}
           />
         ))}
       </div>

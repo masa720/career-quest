@@ -1,14 +1,37 @@
 import "server-only";
 
+import { dateInTimezone } from "@/lib/date";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Task, TaskDraft } from "@/features/tasks/types";
+
+type ServerSupabaseClient = Awaited<
+  ReturnType<typeof createServerSupabaseClient>
+>;
 
 function cleanOptionalText(value: string | null) {
   return value?.trim() || null;
 }
 
+async function getToday(supabase: ServerSupabaseClient) {
+  const { data } = await supabase
+    .from("app_settings")
+    .select("timezone")
+    .eq("id", 1)
+    .maybeSingle();
+  return dateInTimezone(new Date(), data?.timezone ?? "America/Vancouver");
+}
+
 export async function createTask(input: TaskDraft): Promise<Task> {
   const supabase = await createServerSupabaseClient();
+  const today = input.is_today && !input.is_daily ? await getToday(supabase) : null;
+  const taskInput = {
+    category: input.category,
+    title: input.title,
+    priority: input.priority,
+    description: input.description,
+    memo: input.memo,
+    is_daily: input.is_daily,
+  };
   const { data: lastTask, error: positionError } = await supabase
     .from("tasks")
     .select("position")
@@ -23,11 +46,13 @@ export async function createTask(input: TaskDraft): Promise<Task> {
   const { data, error } = await supabase
     .from("tasks")
     .insert({
-      ...input,
+      ...taskInput,
       title: input.title.trim(),
       description: cleanOptionalText(input.description),
       memo: cleanOptionalText(input.memo),
       is_completed: false,
+      scheduled_for: today,
+      selected_at: today ? new Date().toISOString() : null,
       position: (lastTask?.position ?? -1) + 1,
     })
     .select()
@@ -59,18 +84,52 @@ export async function setTaskCompletion(
   return data[0];
 }
 
+export async function setTaskScheduledToday(
+  taskId: string,
+  isToday: boolean,
+): Promise<Task> {
+  const supabase = await createServerSupabaseClient();
+  const today = isToday ? await getToday(supabase) : null;
+  const { data, error } = await supabase
+    .from("tasks")
+    .update({
+      scheduled_for: today,
+      selected_at: today ? new Date().toISOString() : null,
+    })
+    .eq("id", taskId)
+    .eq("is_daily", false)
+    .is("deleted_at", null)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("setTaskScheduledToday", error);
+    throw new Error("今日やるタスクを更新できませんでした。");
+  }
+
+  return data;
+}
+
 export async function updateTask(
   input: TaskDraft & { id: string; is_completed: boolean },
 ): Promise<Task> {
   const supabase = await createServerSupabaseClient();
   const { data: current, error: currentError } = await supabase
     .from("tasks")
-    .select("is_completed")
+    .select("is_completed, scheduled_for, selected_at")
     .eq("id", input.id)
     .is("deleted_at", null)
     .single();
 
   if (currentError || !current) throw new Error("タスクが見つかりません。");
+
+  const today = input.is_today && !input.is_daily ? await getToday(supabase) : null;
+  const scheduledFor = input.is_daily || !input.is_today
+    ? null
+    : current.scheduled_for ?? today;
+  const selectedAt = scheduledFor
+    ? current.selected_at ?? new Date().toISOString()
+    : null;
 
   const { data, error } = await supabase
     .from("tasks")
@@ -81,6 +140,8 @@ export async function updateTask(
       description: cleanOptionalText(input.description),
       memo: cleanOptionalText(input.memo),
       is_daily: input.is_daily,
+      scheduled_for: scheduledFor,
+      selected_at: selectedAt,
     })
     .eq("id", input.id)
     .is("deleted_at", null)
@@ -149,6 +210,8 @@ export async function createReviewTask(id: string): Promise<Task> {
       memo: null,
       is_completed: false,
       is_daily: false,
+      scheduled_for: null,
+      selected_at: null,
       completed_at: null,
       review_of_task_id: id,
       position: (lastTask?.position ?? -1) + 1,

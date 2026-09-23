@@ -22,6 +22,7 @@ export const createTaskSchema = z.object({
   description: optionalText,
   memo: optionalText,
   is_daily: z.boolean(),
+  is_today: z.boolean(),
 });
 
 export const updateTaskSchema = createTaskSchema.extend({
@@ -34,4 +35,9 @@ export const taskIdSchema = z.uuid();
 export const taskCompletionSchema = z.object({
   id: z.uuid(),
   isCompleted: z.boolean(),
+});
+
+export const taskTodaySchema = z.object({
+  id: z.uuid(),
+  isToday: z.boolean(),
 });

@@ -9,13 +9,15 @@ import {
   createReviewTask,
   createTask,
   deleteTask,
-  updateTask,
   setTaskCompletion,
+  setTaskScheduledToday,
+  updateTask,
 } from "@/server/tasks/mutations";
 import {
   createTaskSchema,
   taskCompletionSchema,
   taskIdSchema,
+  taskTodaySchema,
   updateTaskSchema,
 } from "@/server/tasks/schemas";
 import { updateSettings } from "@/server/settings/mutations";
@@ -43,6 +45,7 @@ export async function createTaskAction(
     description: formText(formData, "description"),
     memo: formText(formData, "memo"),
     is_daily: formData.get("is_daily") === "on",
+    is_today: formData.get("is_today") === "on",
   });
 
   if (!parsed.success) {
@@ -86,6 +89,34 @@ export async function setTaskCompletionAction(
         error instanceof Error
           ? error.message
           : "完了状態を更新できませんでした。",
+    };
+  }
+}
+
+export async function setTaskTodayAction(
+  input: unknown,
+): Promise<MutationResult> {
+  const parsed = taskTodaySchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "今日やるタスクの指定が正しくありません。" };
+  }
+
+  try {
+    const task = await setTaskScheduledToday(
+      parsed.data.id,
+      parsed.data.isToday,
+    );
+    revalidatePath("/");
+    revalidatePath("/tasks");
+    revalidatePath(`/tasks/${parsed.data.id}`);
+    return { ok: true, task };
+  } catch (error) {
+    return {
+      ok: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "今日やるタスクを更新できませんでした。",
     };
   }
 }

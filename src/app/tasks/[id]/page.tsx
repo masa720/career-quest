@@ -61,6 +61,9 @@ export default async function TaskDetailPage({
                 <Repeat2 size={12} aria-hidden="true" /> 毎日
               </span>
             )}
+            {task.scheduled_for && !task.is_daily && (
+              <span className="today-badge">🎯 今日やる</span>
+            )}
           </div>
           <Link href={`/tasks?task=${task.id}`} className="button task-detail-edit">
             <Pencil size={16} aria-hidden="true" />

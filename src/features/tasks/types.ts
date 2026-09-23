@@ -20,6 +20,8 @@ export type Task = {
   is_completed: boolean;
   position: number;
   is_daily: boolean;
+  scheduled_for: string | null;
+  selected_at: string | null;
   review_of_task_id: string | null;
   created_at: string;
   updated_at: string;
@@ -30,7 +32,7 @@ export type Task = {
 export type TaskDraft = Pick<
   Task,
   "category" | "title" | "priority" | "description" | "memo" | "is_daily"
->;
+> & { is_today: boolean };
 
 export const categoryLabels: Record<TaskCategory, string> = {
   coding: "Coding",

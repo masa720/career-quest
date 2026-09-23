@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { createTaskAction, type CreateTaskState } from "@/app/actions";
@@ -33,10 +33,26 @@ function FieldError({ errors }: { errors?: string[] }) {
 
 export function TaskCreateForm() {
   const [state, formAction] = useActionState(createTaskAction, initialState);
+  const [isDaily, setIsDaily] = useState(false);
+  const [isToday, setIsToday] = useState(false);
 
   return (
     <form action={formAction} className="task-form">
       {state.error && <div className="form-error">{state.error}</div>}
+
+      <label className="checkbox-field today-quick-pick">
+        <input
+          type="checkbox"
+          name="is_today"
+          checked={isToday}
+          onChange={(event) => {
+            setIsToday(event.target.checked);
+            if (event.target.checked) setIsDaily(false);
+          }}
+        />
+        <span className="checkbox-control" aria-hidden="true" />
+        <span className="checkbox-copy">🎯 今日やるタスクに追加</span>
+      </label>
 
       <div className="form-grid">
         <label className="field">
@@ -101,7 +117,15 @@ export function TaskCreateForm() {
       </label>
 
       <label className="checkbox-field">
-        <input type="checkbox" name="is_daily" />
+        <input
+          type="checkbox"
+          name="is_daily"
+          checked={isDaily}
+          onChange={(event) => {
+            setIsDaily(event.target.checked);
+            if (event.target.checked) setIsToday(false);
+          }}
+        />
         <span className="checkbox-control" aria-hidden="true" />
         <span className="checkbox-copy">毎日のタスクにする</span>
       </label>

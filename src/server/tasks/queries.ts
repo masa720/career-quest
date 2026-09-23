@@ -4,7 +4,7 @@ import type { Task } from "@/features/tasks/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const activeTaskColumns =
-  "id, category, title, priority, description, memo, is_completed, position, is_daily, review_of_task_id, created_at, updated_at, completed_at, deleted_at";
+  "id, category, title, priority, description, memo, is_completed, position, is_daily, scheduled_for, selected_at, review_of_task_id, created_at, updated_at, completed_at, deleted_at";
 
 function throwDatabaseError(message: string, cause: { message: string } | null) {
   if (cause) {
@@ -57,12 +57,10 @@ export async function getDailyTasks(): Promise<Task[]> {
     );
 }
 
-export async function getPriorityTasks(
+export async function getTodayTasks(
   timezone = "America/Vancouver",
 ): Promise<Task[]> {
   const tasks = await getTasks();
-  const priorityRank = { high: 0, medium: 1, low: 2 } as const;
-
   const dateFormatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
     year: "numeric",
@@ -72,17 +70,23 @@ export async function getPriorityTasks(
   const today = dateFormatter.format(new Date());
   const nonDailyTasks = tasks.filter((task) => !task.is_daily);
   const activeTasks = nonDailyTasks
-    .filter((task) => !task.is_completed)
+    .filter(
+      (task) =>
+        !task.is_completed &&
+        task.scheduled_for !== null &&
+        task.scheduled_for <= today,
+    )
     .sort(
       (a, b) =>
-        priorityRank[a.priority] - priorityRank[b.priority] ||
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-    )
-    .slice(0, 3);
+        (a.scheduled_for ?? "").localeCompare(b.scheduled_for ?? "") ||
+        new Date(a.selected_at ?? a.created_at).getTime() -
+          new Date(b.selected_at ?? b.created_at).getTime(),
+    );
   const completedToday = nonDailyTasks
     .filter(
       (task) =>
         task.is_completed &&
+        task.scheduled_for !== null &&
         task.completed_at !== null &&
         dateFormatter.format(new Date(task.completed_at)) === today,
     )

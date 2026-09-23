@@ -20,6 +20,8 @@ export type Database = {
           description: string | null;
           memo: string | null;
           is_completed: boolean;
+          scheduled_for: string | null;
+          selected_at: string | null;
           position: number;
           is_daily: boolean;
           review_of_task_id: string | null;
@@ -36,6 +38,8 @@ export type Database = {
           description?: string | null;
           memo?: string | null;
           is_completed?: boolean;
+          scheduled_for?: string | null;
+          selected_at?: string | null;
           position?: number;
           is_daily?: boolean;
           review_of_task_id?: string | null;
@@ -51,6 +55,8 @@ export type Database = {
           description?: string | null;
           memo?: string | null;
           is_completed?: boolean;
+          scheduled_for?: string | null;
+          selected_at?: string | null;
           position?: number;
           is_daily?: boolean;
           review_of_task_id?: string | null;

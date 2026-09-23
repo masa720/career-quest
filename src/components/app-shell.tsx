@@ -1,10 +1,8 @@
 "use client";
 
-import { Home, ListTodo, LogOut, Plus } from "lucide-react";
+import { Home, ListTodo, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { signOut } from "@/app/login/actions";
 
 const navItems = [
   { href: "/", label: "TOP", icon: Home },
@@ -49,12 +47,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>{label}</span>
           </Link>
         ))}
-        <form action={signOut}>
-          <button type="submit" aria-label="ログアウト">
-            <LogOut size={21} aria-hidden="true" />
-            <span>ログアウト</span>
-          </button>
-        </form>
       </nav>
     </div>
   );
