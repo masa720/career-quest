@@ -32,6 +32,7 @@ import {
 } from "./types";
 
 type FilterValue<T extends string> = T | "all";
+type TodoSort = "newest" | "oldest" | "priority";
 
 const noticeMessages: Record<string, string> = {
   created: "タスクを追加しました",
@@ -510,6 +511,7 @@ export function TaskBoard({
   const [tasks, setTasks] = useState(initialTasks);
   const [category, setCategory] = useState<FilterValue<TaskCategory>>("all");
   const [priority, setPriority] = useState<FilterValue<TaskPriority>>("all");
+  const [todoSort, setTodoSort] = useState<TodoSort>("newest");
   const [query, setQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState<Task | null>(
     initialTasks.find((task) => task.id === selectedTaskId) ?? null,
@@ -544,9 +546,29 @@ export function TaskBoard({
   const filtered =
     category !== "all" || priority !== "all" || query.trim() !== "";
   function tasksFor(completed: boolean) {
-    return sortTasks(
-      filteredTasks.filter((task) => task.is_completed === completed),
+    const laneTasks = filteredTasks.filter(
+      (task) => task.is_completed === completed,
     );
+    if (completed) return sortTasks(laneTasks);
+
+    const priorityRank: Record<TaskPriority, number> = {
+      high: 0,
+      medium: 1,
+      low: 2,
+    };
+
+    return [...laneTasks].sort((a, b) => {
+      const createdDifference =
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (todoSort === "oldest") return createdDifference;
+      if (todoSort === "priority") {
+        return (
+          priorityRank[a.priority] - priorityRank[b.priority] ||
+          -createdDifference
+        );
+      }
+      return -createdDifference;
+    });
   }
 
   function handleReview(task: Task) {
@@ -675,6 +697,17 @@ export function TaskBoard({
                 {priorityLabels[value]}
               </option>
             ))}
+          </select>
+        </label>
+        <label>
+          <span>未着手の並び順</span>
+          <select
+            value={todoSort}
+            onChange={(event) => setTodoSort(event.target.value as TodoSort)}
+          >
+            <option value="newest">新しく登録した順</option>
+            <option value="oldest">古く登録した順</option>
+            <option value="priority">優先度が高い順</option>
           </select>
         </label>
       </div>

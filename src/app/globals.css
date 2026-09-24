@@ -1389,7 +1389,7 @@ summary:focus-visible {
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) 180px 150px;
+  grid-template-columns: minmax(170px, 1fr) 140px 120px 170px;
   gap: 10px;
   margin-bottom: 18px;
   padding: 13px;
