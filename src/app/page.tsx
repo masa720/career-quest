@@ -3,13 +3,14 @@ import {
   CalendarDays,
   Flame,
   LogOut,
-  Pencil,
   Repeat2,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 
 import { updateSettingsAction } from "@/app/actions";
 import { signOut } from "@/app/login/actions";
+import { NotificationSettings } from "@/components/notification-settings";
 import { TaskCompleteButton } from "@/components/task-complete-button";
 import { VisaCountdown } from "@/components/visa-countdown";
 import {
@@ -62,20 +63,30 @@ function VisaCard({ settings }: { settings: AppSettings | null }) {
 
       {settings ? (
         <details className="settings-details">
-          <summary>
-            <Pencil size={14} aria-hidden="true" />
+          <summary aria-label="設定を開く" title="設定">
+            <Settings size={16} aria-hidden="true" />
           </summary>
-          <form action={updateSettingsAction}>
-            <input
-              type="date"
-              name="visa_expiry_date"
-              defaultValue={visaExpiryDate ?? ""}
-              aria-label="ビザ期限"
+          <div className="settings-panel">
+            <div className="visa-date-setting">
+              <strong>🇨🇦 ビザ期限</strong>
+              <form action={updateSettingsAction}>
+                <input
+                  type="date"
+                  name="visa_expiry_date"
+                  defaultValue={visaExpiryDate ?? ""}
+                  aria-label="ビザ期限"
+                />
+                <button type="submit" className="button button-small">
+                  保存
+                </button>
+              </form>
+            </div>
+            <NotificationSettings
+              initialEnabled={settings.notifications_enabled}
+              initialMorningTime={settings.morning_notification_time}
+              initialEveningTime={settings.evening_notification_time}
             />
-            <button type="submit" className="button button-small">
-              保存
-            </button>
-          </form>
+          </div>
           <form action={signOut} className="settings-logout">
             <button type="submit">
               <LogOut size={14} aria-hidden="true" />

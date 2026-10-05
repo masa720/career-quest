@@ -668,6 +668,11 @@ summary:focus-visible {
   top: 22px;
 }
 
+.visa-card:has(.settings-details[open]) {
+  z-index: 20;
+  overflow: visible;
+}
+
 .settings-details summary {
   display: inline-flex;
   min-height: 36px;
@@ -687,6 +692,7 @@ summary:focus-visible {
 }
 
 .settings-details[open] {
+  width: min(340px, calc(100vw - 48px));
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 13px;
@@ -699,6 +705,16 @@ summary:focus-visible {
   color: var(--ink-soft);
 }
 
+.settings-panel {
+  display: grid;
+  gap: 12px;
+  padding: 4px 5px 7px;
+}
+
+.visa-date-setting > strong {
+  font-size: 12px;
+}
+
 .settings-details form {
   display: flex;
   gap: 6px;
@@ -708,6 +724,125 @@ summary:focus-visible {
 .settings-details .settings-logout {
   border-top: 1px solid var(--line);
   padding-top: 7px;
+}
+
+.notification-settings {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.notification-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.notification-settings-heading > span {
+  margin-left: auto;
+  border-radius: 99px;
+  background: #eee8e8;
+  padding: 2px 7px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.notification-settings-heading > span.is-on {
+  background: #e3f3e6;
+  color: #28723a;
+}
+
+.notification-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  border-radius: 9px;
+  background: #fff5dc;
+  padding: 9px;
+  color: #70551d;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.notification-guide svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.notification-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.notification-times label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.notification-times input {
+  width: 100%;
+  min-height: 36px;
+}
+
+.notification-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.notification-buttons button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.notification-buttons button:first-child {
+  grid-column: 1 / -1;
+  border-color: var(--brand);
+  background: var(--brand);
+  color: white;
+}
+
+.notification-buttons button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.notification-error,
+.notification-success {
+  margin: 0;
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.notification-error {
+  background: #fff0f1;
+  color: var(--red);
+}
+
+.notification-success {
+  background: #eaf6eb;
+  color: #28723a;
 }
 
 .settings-logout button {

@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "setup:vapid": "node scripts/setup-vapid.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
