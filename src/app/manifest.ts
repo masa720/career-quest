@@ -5,6 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "CareerQuest",
     short_name: "CareerQuest",
     description: "次のキャリアへ、今日の一歩。",
+    id: "/",
     start_url: "/",
     scope: "/",
     display: "standalone",

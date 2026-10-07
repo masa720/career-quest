@@ -85,18 +85,97 @@ export type Database = {
           id: number;
           visa_expiry_date: string | null;
           timezone: string;
+          notifications_enabled: boolean;
+          morning_notification_time: string;
+          evening_notification_time: string;
+          notification_function_url: string | null;
+          notification_cron_secret: string;
           updated_at: string;
         };
         Insert: {
           id?: number;
           visa_expiry_date?: string | null;
           timezone?: string;
+          notifications_enabled?: boolean;
+          morning_notification_time?: string;
+          evening_notification_time?: string;
+          notification_function_url?: string | null;
+          notification_cron_secret?: string;
           updated_at?: string;
         };
         Update: {
           visa_expiry_date?: string | null;
           timezone?: string;
+          notifications_enabled?: boolean;
+          morning_notification_time?: string;
+          evening_notification_time?: string;
+          notification_function_url?: string | null;
+          notification_cron_secret?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent: string | null;
+          created_at: string;
+          updated_at: string;
+          last_seen_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          user_agent?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          last_seen_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          user_agent?: string | null;
+          updated_at?: string;
+          last_seen_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
+      notification_deliveries: {
+        Row: {
+          id: string;
+          subscription_id: string;
+          notification_type: "morning" | "evening" | "test";
+          local_date: string | null;
+          status: "pending" | "sent" | "failed";
+          sent_at: string | null;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          subscription_id: string;
+          notification_type: "morning" | "evening" | "test";
+          local_date?: string | null;
+          status?: "pending" | "sent" | "failed";
+          sent_at?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          status?: "pending" | "sent" | "failed";
+          sent_at?: string | null;
+          error_message?: string | null;
         };
         Relationships: [];
       };

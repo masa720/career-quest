@@ -1,5 +1,5 @@
 /* global self, caches, fetch */
-const CACHE_NAME = "careerquest-shell-v2";
+const CACHE_NAME = "careerquest-shell-v3";
 const SHELL_ASSETS = [
   "/offline.html",
   "/icon-192.png",
@@ -47,6 +47,42 @@ self.addEventListener("fetch", (event) => {
         return response;
       });
       return cached ?? fresh;
+    }),
+  );
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = payload.title || "CareerQuest";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body || "今日のタスクを確認しましょう。",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: payload.tag || "careerquest-reminder",
+      renotify: true,
+      data: { url: payload.url || "/" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destination = new URL(event.notification.data?.url || "/", self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => new URL(client.url).origin === self.location.origin);
+      if (existing) {
+        return existing.navigate(destination).then(() => existing.focus());
+      }
+      return self.clients.openWindow(destination);
     }),
   );
 });

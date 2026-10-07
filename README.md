@@ -12,6 +12,7 @@ CareerQuest は、転職活動と面接準備のための個人用 PWA です。
 - 完了タスクから新しい「復習タスク」を作成
 - カテゴリ、優先度、キーワードのフィルター
 - iPhone ホーム画面にも追加できる PWA シェル
+- 朝・夜の未完了タスクリマインド（Web Push）
 
 ## 技術構成
 
@@ -20,7 +21,7 @@ CareerQuest は、転職活動と面接準備のための個人用 PWA です。
 - dnd-kit / lucide-react / Zod
 - Vercel
 
-アプリ内のログイン機能はありません。Supabase のサービスロールキーは Server Components / Server Actions からだけ使われ、ブラウザ向けバンドルには含まれません。公開するサイト自体は Vercel Deployment Protection で制限してください。
+Supabase の Secret key は Server Components / Server Actions からだけ使われ、ブラウザ向けバンドルには含まれません。ログインできるユーザーも `OWNER_USER_ID` の1人だけに制限します。
 
 ## ローカル開発
 
@@ -120,12 +121,30 @@ npm run build
 
 ## PWA のインストール
 
-PWA は production build で Service Worker を登録します。ローカルの通常の `npm run dev` では、開発キャッシュによる混乱を避けるため登録しません。
+PWA は Service Worker を登録します。通知を試す場合も、iPhone / iPad ではSafariからホーム画面へ追加したPWAとして開く必要があります。
 
 - iPhone / iPad: Safari で保護済み URL を開き、共有メニューから **ホーム画面に追加**
 - Chrome / Edge: アドレスバーまたはブラウザメニューの **インストール**
 
 インストールには HTTPS が必要です（Vercel は自動で HTTPS を提供します）。オフライン時は案内画面を表示しますが、データの読み書きやオフライン同期は行いません。
+
+## Push通知のセットアップ
+
+通知はブラウザのWeb Push、Supabase Edge Functions、5分間隔のSupabase Cronで動作します。朝・夜の設定時刻になり、未完了の「毎日のタスク」または今日以前に指定したタスクがある場合だけ送ります。送信済み記録により同じ端末へ同じ日の通知を重複送信しません。
+
+まずSupabase CLIへログインしてmigrationを適用し、VAPID鍵を生成します。秘密鍵はSupabase Edge Function Secretsへ直接保存され、標準出力には公開鍵だけが表示されます。
+
+```bash
+npx supabase login
+npx supabase link --project-ref YOUR_PROJECT_REF
+npx supabase db push
+npm run setup:vapid
+npx supabase functions deploy send-task-reminders --no-verify-jwt
+```
+
+`npm run setup:vapid` が表示した `NEXT_PUBLIC_VAPID_PUBLIC_KEY` を、ローカルの `.env` とVercelのEnvironment Variablesへ同じ値で追加してください。Vercelは環境変数を追加した後に再デプロイします。
+
+アプリのTOPにある歯車から朝・夜の時刻を設定し、「通知を有効にする」を押します。最後に「テスト」で端末へ届くことを確認してください。通知許可はブラウザの仕様上、必ずこのボタン操作から要求します。
 
 ## 運用上の注意
 
