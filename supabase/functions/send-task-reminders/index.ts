@@ -1,6 +1,52 @@
 import { send, type Subscription } from "@daaku/webpush";
 import { createClient } from "@supabase/supabase-js";
 
+type Base64Options = {
+  alphabet?: "base64" | "base64url";
+  omitPadding?: boolean;
+};
+
+type Uint8ArrayWithBase64 = typeof Uint8Array & {
+  fromBase64?: (value: string, options?: Base64Options) => Uint8Array;
+};
+
+type Base64Uint8Array = Uint8Array & {
+  toBase64?: (options?: Base64Options) => string;
+};
+
+// Supabase Edge Runtime currently uses a Deno version that predates the
+// Uint8Array Base64 proposal used by @daaku/webpush.
+const uint8ArrayWithBase64 = Uint8Array as Uint8ArrayWithBase64;
+if (!uint8ArrayWithBase64.fromBase64) {
+  Object.defineProperty(Uint8Array, "fromBase64", {
+    value(value: string, options: Base64Options = {}) {
+      let normalized = options.alphabet === "base64url"
+        ? value.replace(/-/g, "+").replace(/_/g, "/")
+        : value;
+      normalized += "=".repeat((4 - (normalized.length % 4)) % 4);
+      return Uint8Array.from(atob(normalized), (character) =>
+        character.charCodeAt(0)
+      );
+    },
+  });
+}
+
+if (!(Uint8Array.prototype as Base64Uint8Array).toBase64) {
+  Object.defineProperty(Uint8Array.prototype, "toBase64", {
+    value(this: Uint8Array, options: Base64Options = {}) {
+      let binary = "";
+      for (let index = 0; index < this.length; index += 1) {
+        binary += String.fromCharCode(this[index]);
+      }
+      let encoded = btoa(binary);
+      if (options.alphabet === "base64url") {
+        encoded = encoded.replace(/\+/g, "-").replace(/\//g, "_");
+      }
+      return options.omitPadding ? encoded.replace(/=+$/g, "") : encoded;
+    },
+  });
+}
+
 type ReminderMode = "scheduled" | "test";
 type ReminderType = "morning" | "evening" | "test";
 
@@ -226,6 +272,7 @@ Deno.serve(async (request) => {
   let sent = 0;
   let skipped = 0;
   let failed = 0;
+  const failureMessages: string[] = [];
 
   for (const subscription of subscriptions ?? []) {
     let deliveryId: string | null = null;
@@ -299,6 +346,7 @@ Deno.serve(async (request) => {
     } catch (error) {
       failed += 1;
       const message = error instanceof Error ? error.message : String(error);
+      failureMessages.push(message.slice(0, 500));
       console.error("push", subscription.id, message);
       if (deliveryId) {
         await supabase
@@ -335,6 +383,7 @@ Deno.serve(async (request) => {
         error: subscriptions?.length
           ? "Test notification failed"
           : "No active subscriptions",
+        failures: failureMessages,
       },
       subscriptions?.length ? 502 : 409,
     );

@@ -490,9 +490,10 @@ summary:focus-visible {
   position: absolute;
   z-index: 0;
   top: 0;
-  right: 0;
-  left: 0;
+  right: 18px;
+  left: 18px;
   height: 5px;
+  border-radius: 999px;
   background: repeating-linear-gradient(
     135deg,
     #ff4552 0,
