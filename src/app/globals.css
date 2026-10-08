@@ -2257,6 +2257,38 @@ summary:focus-visible {
     padding: 22px 18px 18px;
   }
 
+  .visa-card:has(.settings-details[open]) {
+    min-height: 0;
+    overflow: hidden;
+    padding: 22px 12px 12px;
+  }
+
+  .visa-card:has(.settings-details[open]) > :not(.settings-details) {
+    display: none;
+  }
+
+  .visa-card .settings-details[open] {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    margin: 0;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: none;
+  }
+
+  .visa-card .settings-details[open] summary {
+    min-height: 40px;
+  }
+
+  .visa-card .notification-times {
+    grid-template-columns: 1fr;
+  }
+
+  .visa-card .notification-times label {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
   .countdown-display {
     width: 100%;
     min-width: 0;
